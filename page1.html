@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>测试页 1 - 数据表格</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,"Segoe UI",Roboto,"PingFang SC","Microsoft YaHei",sans-serif}
+body{background:linear-gradient(135deg,#eaf2ff 0%,#f5e9ff 100%);padding:20px;min-height:100vh}
+.nav{max-width:1000px;margin:0 auto 20px;background:#fff;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.04);display:flex;align-items:center;gap:8px;padding:12px 16px}
+.nav a{text-decoration:none;color:#555;font-size:13px;padding:6px 14px;border-radius:6px}
+.nav a:hover{background:#f5f5f5}
+.nav a.active{background:#1677ff;color:#fff;font-weight:500}
+.nav .brand{font-weight:600;color:#1677ff;margin-right:auto;font-size:14px}
+.page{max-width:1000px;margin:0 auto}
+.card{background:#fff;border-radius:10px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,.04)}
+h1{font-size:18px;color:#333;margin-bottom:6px}
+.desc{font-size:13px;color:#888;margin-bottom:16px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{background:#fafafa;padding:10px 12px;text-align:left;font-weight:500;color:#555;border-bottom:1px solid #eee}
+td{padding:10px 12px;border-bottom:1px solid #f5f5f5;color:#444}
+tbody tr:hover{background:#f8fbff}
+.tag{display:inline-block;padding:2px 10px;border-radius:10px;font-size:12px}
+.tag.ok{background:#e6f7ec;color:#1a9c52}.tag.warn{background:#fff7e6;color:#d48806}.tag.err{background:#fff1f0;color:#e0453a}
+.back{display:inline-block;margin-top:20px;font-size:13px;color:#1677ff;text-decoration:none}
+.back:hover{text-decoration:underline}
+</style>
+</head>
+<body>
+<div class="nav">
+  <span class="brand">跳转测试</span>
+  <a href="index.html">首页</a>
+  <a href="page1.html" class="active">表格</a>
+  <a href="page2.html">卡片</a>
+  <a href="page3.html">表单</a>
+</div>
+<div class="page">
+  <div class="card">
+    <h1>测试页 1：数据表格</h1>
+    <p class="desc">设备运行状态列表（点击导航可切换到其他页面）</p>
+    <table>
+      <thead><tr><th>设备名称</th><th>状态</th><th>CPU</th><th>在线时长</th></tr></thead>
+      <tbody>
+        <tr><td>Gateway-01</td><td><span class="tag ok">在线</span></td><td>32%</td><td>48h</td></tr>
+        <tr><td>Gateway-02</td><td><span class="tag warn">告警</span></td><td>87%</td><td>12h</td></tr>
+        <tr><td>ESL-1043</td><td><span class="tag ok">在线</span></td><td>15%</td><td>168h</td></tr>
+        <tr><td>ESL-1044</td><td><span class="tag err">离线</span></td><td>—</td><td>—</td></tr>
+        <tr><td>Cloud-Node-1</td><td><span class="tag ok">在线</span></td><td>56%</td><td>720h</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <a class="back" href="index.html">← 返回文件库首页</a>
+</div>
+</body>
+</html>
