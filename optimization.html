@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><title>墨水屏标签 APP 优化原型</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,"Segoe UI",Roboto,"PingFang SC","Microsoft YaHei",sans-serif;-webkit-tap-highlight-color:transparent}
+body{background:#eef1f8;color:#222}
+/* 顶部切换导航 */
+.tab-nav{position:sticky;top:0;z-index:60;background:linear-gradient(135deg,#5b7cfa 0%,#6a5bfa 100%);padding:14px 12px 0;color:#fff}
+.tab-nav .nav-tit{display:flex;align-items:center;justify-content:space-between;padding-bottom:12px}
+.tab-nav .nav-tit .t1{font-size:17px;font-weight:700}
+.tab-nav .nav-tit .t2{font-size:12px;opacity:.85}
+.tab-nav .tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:10px;scrollbar-width:none}
+.tab-nav .tabs::-webkit-scrollbar{display:none}
+.tab-nav .tabs .tab{flex-shrink:0;padding:7px 14px;border-radius:16px;font-size:12px;background:rgba(255,255,255,.18);color:#fff;cursor:pointer;white-space:nowrap;transition:all .2s}
+.tab-nav .tabs .tab.active{background:#fff;color:#5b7cfa;font-weight:600}
+/* 手机容器 */
+.phone{max-width:480px;margin:0 auto;min-height:100vh;background:#f4f6fb;padding-bottom:40px}
+.page{display:none}
+.page.active{display:block}
+.mock-hint{font-size:11px;color:#9aa3b5;text-align:center;padding:8px 16px;background:#eef2ff;border-radius:8px;margin:12px}
+.mock-hint b{color:#5b7cfa}
+
+/* ===== 模块A 首页 ===== */
+.store-bar{background:linear-gradient(135deg,#5b7cfa 0%,#6a5bfa 100%);color:#fff;padding:18px 16px 16px}
+.store-bar .greet{font-size:13px;opacity:.9;margin-bottom:8px}
+.store-switch{display:flex;align-items:center;gap:8px;cursor:pointer}
+.store-switch .logo{width:42px;height:42px;border-radius:10px;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.store-switch .s-name{font-size:17px;font-weight:700}
+.store-switch .s-meta{font-size:11px;opacity:.85;margin-top:3px}
+.store-switch .arrow{margin-left:auto;font-size:16px;opacity:.8}
+.alert-bar{background:#fff;margin:12px 12px 0;border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 1px 6px rgba(0,0,0,.04);border-left:4px solid #e0574b;cursor:pointer}
+.alert-bar .a-icon{font-size:20px}.alert-bar .a-txt{font-size:13px;color:#333;flex:1}
+.alert-bar .a-sub{font-size:11px;color:#999;margin-top:2px}.alert-bar .a-go{color:#e0574b;font-size:16px}
+.quick{background:#fff;margin:12px;border-radius:12px;padding:14px;box-shadow:0 1px 6px rgba(0,0,0,.04)}
+.quick .grp-tit{font-size:12px;color:#999;margin:6px 0 10px}
+.quick .grp-tit:first-child{margin-top:0}
+.quick .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px 8px}
+.quick .item{display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;text-decoration:none}
+.quick .item .ic{width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px}
+.quick .item .nm{font-size:11px;color:#555;text-align:center;line-height:1.3}
+.quick .item .nm b{display:block;color:#333}
+.ic-blue{background:#edf2ff;color:#5b7cfa}.ic-green{background:#e8faf1;color:#2ec47b}.ic-orange{background:#fff3e6;color:#e6a23c}.ic-purple{background:#f2ecff;color:#7a5bfa}.ic-gray{background:#f2f4f8;color:#7a8599}
+.stats{background:#fff;margin:0 12px 12px;border-radius:12px;padding:14px;box-shadow:0 1px 6px rgba(0,0,0,.04);display:flex}
+.stat{flex:1;text-align:center;position:relative}
+.stat+.stat::before{content:"";position:absolute;left:0;top:20%;height:60%;width:1px;background:#eef1f8}
+.stat .num{font-size:20px;font-weight:700}
+.stat .num.on{color:#2ec47b}.stat .num.warn{color:#e6a23c}.stat .num.off{color:#9aa3b5}
+.stat .lb{font-size:11px;color:#888;margin-top:4px}
+.card-tit{font-size:13px;font-weight:600;color:#333;margin:16px 12px 10px;display:flex;justify-content:space-between;align-items:center}
+.card-tit .more{font-size:12px;color:#5b7cfa;font-weight:400}
+.recent{background:#fff;margin:0 12px;border-radius:12px;padding:6px 14px;box-shadow:0 1px 6px rgba(0,0,0,.04)}
+.recent .row{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid #f4f6fb}
+.recent .row:last-child{border-bottom:none}
+.recent .ic2{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.recent .tx{flex:1;font-size:13px}
+.recent .tx .sub{font-size:11px;color:#999;margin-top:2px}
+.recent .st2{font-size:11px;color:#2ec47b;font-weight:600}
+.store-drop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:70;align-items:flex-end}
+.store-drop.show{display:flex}
+.store-drop .panel{background:#fff;width:100%;max-width:480px;margin:0 auto;border-radius:16px 16px 0 0;padding:16px 16px 26px}
+.store-drop .pd-tit{font-size:15px;font-weight:600;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center}
+.store-drop .close{font-size:22px;color:#999;cursor:pointer}
+.store-item{display:flex;align-items:center;gap:10px;padding:12px;border-radius:10px;cursor:pointer}
+.store-item:hover{background:#f5f7ff}
+.store-item .lg{width:36px;height:36px;border-radius:8px;background:#edf2ff;color:#5b7cfa;display:flex;align-items:center;justify-content:center;font-size:16px}
+.store-item .sn{flex:1;font-size:14px}
+.store-item .sd{font-size:11px;color:#999;margin-top:2px}
+.store-item .ok2{color:#2ec47b}
+
+/* ===== 模块B 离线刷图 ===== */
+.sub-bar{background:linear-gradient(135deg,#5b7cfa 0%,#6a5bfa 100%);color:#fff;padding:14px 16px;display:flex;align-items:center;gap:10px}
+.sub-bar .title{font-size:16px;font-weight:600;flex:1}
+.sub-bar .badge{background:rgba(255,255,255,.2);padding:3px 10px;border-radius:12px;font-size:12px}
+.progress-panel{background:#fff;margin:12px;border-radius:12px;padding:16px;box-shadow:0 1px 6px rgba(0,0,0,.04)}
+.progress-panel .overall{display:flex;align-items:center;gap:16px}
+.big-ring{width:76px;height:76px;position:relative;flex-shrink:0}
+.big-ring .pct{font-size:18px;font-weight:700;color:#222}
+.big-ring .plb{font-size:9px;color:#999}
+.progress-panel .info{flex:1}
+.progress-panel .info .tit{font-size:14px;font-weight:600;margin-bottom:6px}
+.progress-panel .info .meta{font-size:12px;color:#666;line-height:1.8}
+.progress-panel .info .meta b{color:#222}
+.eta{display:inline-block;font-size:12px;color:#fff;background:#5b7cfa;padding:2px 8px;border-radius:10px;margin-top:4px}
+.steps{display:flex;margin:0 12px 12px;background:#fff;border-radius:12px;padding:14px 12px;box-shadow:0 1px 6px rgba(0,0,0,.04)}
+.step{flex:1;text-align:center;position:relative}
+.step .dot{width:26px;height:26px;border-radius:50%;margin:0 auto 6px;display:flex;align-items:center;justify-content:center;font-size:12px;background:#eef1f8;color:#999;transition:all .3s}
+.step.active .dot{background:#5b7cfa;color:#fff}
+.step.done .dot{background:#2ec47b;color:#fff}
+.step .st{font-size:11px;color:#999}
+.step.active .st,.step.done .st{color:#222;font-weight:500}
+.step:not(:last-child)::after{content:"";position:absolute;top:12px;right:-50%;width:100%;height:2px;background:#eef1f8}
+.step.done:not(:last-child)::after{background:#2ec47b}
+.target-card{background:#fff;margin:12px;border-radius:12px;padding:14px;box-shadow:0 1px 6px rgba(0,0,0,.04)}
+.target-card .label{font-size:12px;color:#999;margin-bottom:8px;display:flex;justify-content:space-between}
+.target-card .label .count{color:#5b7cfa;font-weight:600}
+.devices{display:flex;flex-direction:column;gap:8px}
+.dev-item{display:flex;align-items:center;gap:10px;padding:10px;background:#f7f9ff;border-radius:10px;border:1px solid #eef1f8}
+.dev-item .avatar{width:34px;height:34px;border-radius:8px;background:linear-gradient(135deg,#5b7cfa,#7a5bfa);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0}
+.dev-item .info{flex:1;min-width:0}
+.dev-item .name{font-size:14px;font-weight:500}
+.dev-item .sub{font-size:11px;color:#999;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dev-item .status{margin-left:auto;display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+.dev-item .stat-txt{font-size:12px;font-weight:500}
+.dev-item .stat-sub{font-size:10px;color:#999}
+.st-wait{color:#999}.st-queue{color:#e6a23c}.st-run{color:#5b7cfa}.st-ok{color:#2ec47b}.st-fail{color:#e0574b}
+.ctrl{display:flex;gap:10px;margin:14px 12px}
+.btn{flex:1;padding:13px;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;transition:transform .1s}
+.btn:active{transform:scale(.97)}
+.btn-primary{background:linear-gradient(135deg,#5b7cfa,#6a5bfa);color:#fff}
+.btn-ghost{background:#fff;color:#5b7cfa;border:1px solid #5b7cfa}
+.banner{display:none;margin:0 12px 12px;border-radius:12px;padding:14px 16px;font-size:13px;align-items:center;gap:12px}
+.banner.show{display:flex}
+.banner.ok{background:#e9faf1;color:#1c9d5f;border:1px solid #bfe9d2}
+.banner.fail{background:#fdeeee;color:#d13a2f;border:1px solid #f3c6c2}
+.banner .icon{font-size:22px}
+.echo{background:#fff;margin:0 12px 12px;border-radius:12px;padding:14px;box-shadow:0 1px 6px rgba(0,0,0,.04)}
+.echo .eh-tit{font-size:12px;color:#999;margin-bottom:10px}
+.echo .eh-list{display:flex;gap:10px;overflow-x:auto;padding-bottom:4px}
+.echo .screen{width:92px;flex-shrink:0;text-align:center}
+.echo .sc{width:92px;height:120px;background:linear-gradient(135deg,#fff 0%,#e8e8e8 100%);border:1px solid #ddd;border-radius:6px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.echo .sc .qrcode{width:56px;height:56px;background:repeating-conic-gradient(#222 0% 25%,transparent 0% 50%);background-size:8px 8px;opacity:.85}
+.echo .nm{font-size:11px;color:#555;margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.echo .tag-ok{font-size:10px;color:#2ec47b;font-weight:600}
+.progress-ring{width:34px;height:34px;position:relative}
+.progress-ring svg{transform:rotate(-90deg)}
+
+/* ===== 模块C 标签详情 ===== */
+.detail-wrap{background:#fff;margin:12px;border-radius:12px;padding:16px;box-shadow:0 1px 6px rgba(0,0,0,.04)}
+.screen-shot{display:flex;gap:14px;align-items:center}
+.shot-box{width:120px;height:158px;background:linear-gradient(135deg,#fff 0%,#e8e8e8 100%);border:1px solid #ddd;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;position:relative;overflow:hidden;flex-shrink:0}
+.shot-box .qrcode{width:70px;height:70px;background:repeating-conic-gradient(#222 0% 25%,transparent 0% 50%);background-size:9px 9px;opacity:.9}
+.shot-box .tline{font-size:9px;color:#333;letter-spacing:.5px}
+.shot-box .refresh{position:absolute;right:6px;top:6px;background:#5b7cfa;color:#fff;width:24px;height:24px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;cursor:pointer}
+.shot-info{flex:1}
+.shot-info .si-tit{font-size:14px;font-weight:600;margin-bottom:6px}
+.shot-info .si-meta{font-size:12px;color:#666;line-height:1.9}
+.shot-info .si-meta b{color:#222}
+.tag-status{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:10px;font-size:12px;font-weight:600}
+.tag-status.on{background:#e9faf1;color:#1c9d5f}
+.auto-update{display:flex;align-items:center;justify-content:space-between;background:#f7f9ff;border-radius:10px;padding:12px 14px;margin-top:14px}
+.auto-update .au-txt{font-size:13px}
+.auto-update .au-sub{font-size:11px;color:#999;margin-top:3px}
+.switch{width:46px;height:26px;border-radius:13px;background:#d5d9e6;position:relative;cursor:pointer;transition:background .2s}
+.switch.on{background:#2ec47b}
+.switch::after{content:"";position:absolute;top:2px;left:2px;width:22px;height:22px;border-radius:50%;background:#fff;transition:left .2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.switch.on::after{left:22px}
+.detail-rows{background:#fff;margin:12px;border-radius:12px;padding:6px 16px;box-shadow:0 1px 6px rgba(0,0,0,.04)}
+.d-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #f4f6fb;font-size:13px}
+.d-row:last-child{border-bottom:none}
+.d-row .k{color:#666}.d-row .v{color:#222;font-weight:500}
+.battery{color:#2ec47b}
+.signal-bar{display:inline-flex;gap:2px;align-items:flex-end;height:14px}
+.signal-bar i{width:4px;background:#2ec47b;border-radius:1px;display:inline-block}
+.signal-bar i:nth-child(1){height:4px}.signal-bar i:nth-child(2){height:7px}.signal-bar i:nth-child(3){height:10px}.signal-bar i:nth-child(4){height:13px}.signal-bar i:nth-child(5){height:7px;background:#c9cfdd}
+.detail-actions{display:flex;gap:10px;margin:0 12px}
+.da{flex:1;padding:12px;border-radius:10px;text-align:center;font-size:14px;font-weight:600;cursor:pointer}
+.da-flash{background:linear-gradient(135deg,#5b7cfa,#6a5bfa);color:#fff}
+.da-outline{background:#fff;color:#e0574b;border:1px solid #e0574b}
+.history{background:#fff;margin:12px;border-radius:12px;padding:6px 16px;box-shadow:0 1px 6px rgba(0,0,0,.04)}
+.h-row{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid #f4f6fb;font-size:13px}
+.h-row:last-child{border-bottom:none}
+.h-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.h-dot.ok{background:#2ec47b}.h-dot.fail{background:#e0574b}
+.h-txt{flex:1}.h-txt .h-sub{font-size:11px;color:#999;margin-top:2px}
+.h-st{font-size:11px;font-weight:600}
+
+/* ===== 模块D 数据修改 ===== */
+.edit-wrap{display:flex;flex-direction:column;gap:12px;padding:0 12px}
+.edit-preview{background:#fff;border-radius:12px;padding:14px;box-shadow:0 1px 6px rgba(0,0,0,.04)}
+.ep-tit{font-size:12px;color:#999;margin-bottom:10px;display:flex;justify-content:space-between}
+.ep-tit .live{color:#e6a23c;font-weight:600}
+.ep-live{display:flex;gap:12px;align-items:center}
+.tag-screen{width:110px;height:146px;background:#fff;border:2px solid #ddd;border-radius:8px;padding:10px;display:flex;flex-direction:column;justify-content:space-between;box-shadow:inset 0 0 0 1px #eee;flex-shrink:0}
+.tag-screen .ts-line{display:flex;justify-content:space-between;font-size:8px;color:#333}
+.tag-screen .ts-name{font-size:9px;color:#333;margin-top:4px;word-break:break-all;line-height:1.4}
+.tag-screen .ts-price{font-size:20px;font-weight:700;color:#222}
+.tag-screen .ts-qr{width:44px;height:44px;background:repeating-conic-gradient(#222 0% 25%,transparent 0% 50%);background-size:7px 7px;margin:4px auto 0}
+.ep-info{flex:1}
+.ep-info .ep-stat{font-size:13px;font-weight:600;margin-bottom:6px}
+.ep-info .ep-warn{font-size:11px;color:#e6a23c;background:#fff7e6;padding:6px 8px;border-radius:6px;line-height:1.5}
+.edit-form{background:#fff;border-radius:12px;padding:6px 16px;box-shadow:0 1px 6px rgba(0,0,0,.04)}
+.f-row{display:flex;align-items:center;padding:11px 0;border-bottom:1px solid #f4f6fb;gap:12px}
+.f-row:last-child{border-bottom:none}
+.f-row .fk{width:76px;font-size:13px;color:#666;flex-shrink:0}
+.f-row .fk .en{display:block;font-size:10px;color:#b0b6c5}
+.f-row .fv{flex:1;display:flex;align-items:center;gap:6px}
+.f-row input{flex:1;border:1px solid #e0e4f0;border-radius:8px;padding:8px 10px;font-size:13px;outline:none}
+.f-row input:focus{border-color:#5b7cfa}
+.f-row .unit{font-size:11px;color:#999}
+.hint-chip{display:inline-block;font-size:10px;color:#5b7cfa;background:#edf2ff;padding:2px 8px;border-radius:8px}
+.edit-actions{display:flex;gap:10px;margin:0 12px}
+.save-btn{flex:1;padding:13px;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer}
+.save-primary{background:linear-gradient(135deg,#5b7cfa,#6a5bfa);color:#fff}
+.save-sync{background:#fff;color:#5b7cfa;border:1px solid #5b7cfa}
+.save-pop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:70;align-items:flex-end}
+.save-pop.show{display:flex}
+.save-pop .panel{background:#fff;width:100%;max-width:480px;margin:0 auto;border-radius:16px 16px 0 0;padding:20px 16px 26px;text-align:center}
+.save-pop .ok-icon{width:52px;height:52px;border-radius:50%;background:#e9faf1;color:#2ec47b;font-size:26px;display:flex;align-items:center;justify-content:center;margin:0 auto 12px}
+.save-pop .sp-tit{font-size:16px;font-weight:600;margin-bottom:6px}
+.save-pop .sp-sub{font-size:13px;color:#666;margin-bottom:16px}
+.save-pop .sp-btn{width:100%;padding:13px;border:none;border-radius:10px;background:#5b7cfa;color:#fff;font-size:15px;font-weight:600;cursor:pointer}
+
+/* 通用面板 */
+.panel-card{background:#fff;margin:12px;border-radius:12px;padding:16px;box-shadow:0 1px 6px rgba(0,0,0,.04)}
+.section-tit{font-size:12px;color:#999;margin:16px 12px 8px}
+.footer-note{text-align:center;font-size:11px;color:#b0b6c5;padding:16px;margin-bottom:30px}
+</style>
+</head>
+<body>
+<!-- 顶部切换导航 -->
+<div class="tab-nav">
+  <div class="nav-tit">
+    <div class="t1">墨水屏标签 APP · 优化原型</div>
+    <div class="t2">4 大改造模块演示</div>
+  </div>
+  <div class="tabs">
+    <div class="tab active" data-p="home">① 首页</div>
+    <div class="tab" data-p="flash">② 离线刷图</div>
+    <div class="tab" data-p="detail">③ 标签详情</div>
+    <div class="tab" data-p="edit">④ 数据修改</div>
+  </div>
+</div>
+
+<div class="phone">
+  <!-- ===== 模块A 首页 ===== -->
+  <div class="page active" id="page-home">
+    <div class="store-bar">
+      <div class="greet">上午好，店长</div>
+      <div class="store-switch" onclick="toggleStoreDrop(true)">
+        <div class="logo">🏬</div>
+        <div>
+          <div class="s-name" id="storeName">XX 连锁 · 一号店</div>
+          <div class="s-meta" id="storeMeta">3 个网关 · 11 个标签</div>
+        </div>
+        <div class="arrow">▾</div>
+      </div>
+    </div>
+
+    <div class="alert-bar" onclick="switchTab('flash')">
+      <div class="a-icon">⚠️</div>
+      <div>
+        <div class="a-txt">1 个标签离线超过 24 小时</div>
+        <div class="a-sub">仓库A-02 库位牌 · 电量低</div>
+      </div>
+      <div class="a-go">›</div>
+    </div>
+
+    <div class="quick">
+      <div class="grp-tit">常用操作</div>
+      <div class="grid">
+        <a class="item" href="#home" onclick="switchTab('flash')"><div class="ic ic-blue">🖨</div><div class="nm"><b>离线刷图</b></div></a>
+        <a class="item" href="#home" onclick="switchTab('detail')"><div class="ic ic-green">🏷</div><div class="nm"><b>标签详情</b></div></a>
+        <a class="item" href="#home" onclick="switchTab('edit')"><div class="ic ic-orange">✏️</div><div class="nm"><b>修改数据</b></div></a>
+        <a class="item" href="#home"><div class="ic ic-purple">📷</div><div class="nm"><b>绑定标签</b></div></a>
+      </div>
+      <div class="grp-tit">更多工具</div>
+      <div class="grid">
+        <a class="item" href="#home"><div class="ic ic-gray">🌐</div><div class="nm">WiFi 配网</div></a>
+        <a class="item" href="#home"><div class="ic ic-gray">📊</div><div class="nm">数据列表</div></a>
+        <a class="item" href="#home"><div class="ic ic-gray">🔁</div><div class="nm">网关管理</div></a>
+        <a class="item" href="#home"><div class="ic ic-gray">💡</div><div class="nm">标签点灯</div></a>
+      </div>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><div class="num on">1</div><div class="lb">网关在线</div></div>
+      <div class="stat"><div class="num off">0</div><div class="lb">网关离线</div></div>
+      <div class="stat"><div class="num on">10</div><div class="lb">标签在线</div></div>
+      <div class="stat"><div class="num warn">1</div><div class="lb">标签告警</div></div>
+    </div>
+
+    <div class="card-tit">最近操作 <span class="more">全部 ›</span></div>
+    <div class="recent">
+      <div class="row"><div class="ic2 ic-blue">🖨</div><div class="tx">批量刷图 · 货架价签 3 台<div class="sub">今天 10:24</div></div><div class="st2">成功</div></div>
+      <div class="row"><div class="ic2 ic-orange">✏️</div><div class="tx">修改数据 · 促销价<div class="sub">昨天 16:05</div></div><div class="st2">成功</div></div>
+      <div class="row"><div class="ic2 ic-green">🏷</div><div class="tx">绑定新标签 · ESL-1044<div class="sub">前天 09:12</div></div><div class="st2">成功</div></div>
+    </div>
+    <div class="mock-hint"><b>首页改造点：</b>门店切换下拉、离线告警横幅、常用/更多入口分组、指标口语化</div>
+    <div class="footer-note">底部导航示意：首页 · 设备 · 数据 · 我的（图中省略）</div>
+  </div>
+
+  <!-- ===== 模块B 离线刷图 ===== -->
+  <div class="page" id="page-flash">
+    <div class="sub-bar">
+      <span class="title">离线刷图</span>
+      <span class="badge" id="fBadge">已选 3 台</span>
+    </div>
+    <div class="progress-panel">
+      <div class="overall">
+        <div class="big-ring" id="bigRing"></div>
+        <div class="info">
+          <div class="tit" id="fTit">准备就绪</div>
+          <div class="meta">本次共 <b id="fTotal">3</b> 台，已成功 <b id="fOk">0</b> 台</div>
+          <div class="eta" id="fEta" style="display:none">预计剩余 8 秒</div>
+        </div>
+      </div>
+    </div>
+    <div class="steps">
+      <div class="step active" id="fs1"><div class="dot">1</div><div class="st">连接设备</div></div>
+      <div class="step" id="fs2"><div class="dot">2</div><div class="st">下发内容</div></div>
+      <div class="step" id="fs3"><div class="dot">3</div><div class="st">完成</div></div>
+    </div>
+    <div class="target-card">
+      <div class="label"><span>目标设备</span><span class="count">3 台</span></div>
+      <div class="devices" id="fDevices"></div>
+    </div>
+    <div class="ctrl">
+      <button class="btn btn-primary" id="fStart" onclick="flashStart()">开始刷图</button>
+      <button class="btn btn-ghost" id="fReset" onclick="flashReset()" style="display:none">重新刷图</button>
+    </div>
+    <div class="banner" id="fBanner"></div>
+    <div class="echo" id="fEcho" style="display:none">
+      <div class="eh-tit">刷图结果 · 屏幕回显</div>
+      <div class="eh-list" id="fEchoList"></div>
+    </div>
+    <div class="mock-hint"><b>离线刷图改造点：</b>整体进度环、三步流程条、逐个设备实时状态、失败重试、屏幕回显</div>
+  </div>
+
+  <!-- ===== 模块C 标签详情 ===== -->
+  <div class="page" id="page-detail">
+    <div class="sub-bar"><span class="title">标签详情</span><span class="tag-status on" id="dStatus">● 在线</span></div>
+    <div class="detail-wrap">
+      <div class="screen-shot">
+        <div class="shot-box">
+          <div class="refresh" onclick="refreshShot(this)" title="刷新屏幕预览">⟳</div>
+          <div class="qrcode"></div>
+          <div class="tline">¥ 19.90</div>
+          <div class="tline" style="font-size:8px;color:#666">货架 · 促销价</div>
+        </div>
+        <div class="shot-info">
+          <div class="si-tit">屏幕实时预览</div>
+          <div class="si-meta">上次回传：<b>10:24</b><br>设备名：<b>ESL-1043</b><br>MAC：<b>8C:CE:4E:00:01:2A</b></div>
+        </div>
+      </div>
+      <div class="auto-update">
+        <div>
+          <div class="au-txt">内容变更后自动刷新屏幕</div>
+          <div class="au-sub">开启后，标签将自动同步最新内容</div>
+        </div>
+        <div class="switch on" onclick="this.classList.toggle('on')"></div>
+      </div>
+    </div>
+    <div class="card-tit">设备状态</div>
+    <div class="detail-rows">
+      <div class="d-row"><span class="k">电池电量</span><span class="v battery">87% ▉▉▉▉▉</span></div>
+      <div class="d-row"><span class="k">信号强度</span><span class="v"><span class="signal-bar"><i></i><i></i><i></i><i></i><i></i></span> 良好</span></div>
+      <div class="d-row"><span class="k">所属归属</span><span class="v">一号店 / 货架A</span></div>
+      <div class="d-row"><span class="k">剩余刷新次数</span><span class="v">12,480 次</span></div>
+    </div>
+    <div class="detail-actions">
+      <div class="da da-flash" onclick="switchTab('flash')">立即刷图</div>
+      <div class="da da-outline">解绑设备</div>
+    </div>
+    <div class="card-tit">操作记录</div>
+    <div class="history">
+      <div class="h-row"><span class="h-dot ok"></span><div class="h-txt">屏幕刷新成功<div class="h-sub">今天 10:24 · 触发：手动</div></div><span class="h-st" style="color:#2ec47b">成功</span></div>
+      <div class="h-row"><span class="h-dot ok"></span><div class="h-txt">数据修改：促销价 19.90<div class="h-sub">今天 10:23 · 由「我的归属」</div></div><span class="h-st" style="color:#2ec47b">成功</span></div>
+      <div class="h-row"><span class="h-dot fail"></span><div class="h-txt">屏幕刷新失败<div class="h-sub">昨天 18:02 · 原因：信号弱</div></div><span class="h-st" style="color:#e0574b">失败</span></div>
+    </div>
+    <div class="mock-hint"><b>标签详情改造点：</b>屏幕实时预览+刷新回传、状态可视化（电量/信号）、操作记录、一键刷图</div>
+  </div>
+
+  <!-- ===== 模块D 数据修改 ===== -->
+  <div class="page" id="page-edit">
+    <div class="sub-bar"><span class="title">修改数据 · ESL-1043</span></div>
+    <div class="edit-wrap">
+      <div class="edit-preview">
+        <div class="ep-tit"><span>标签实时预览</span><span class="live">● 编辑中实时渲染</span></div>
+        <div class="ep-live">
+          <div class="tag-screen">
+            <div class="ts-line"><span>¥</span><span>促销价</span></div>
+            <div class="ts-name" id="pvName">可乐 500ml 促销装</div>
+            <div class="ts-price" id="pvPrice">19.90</div>
+            <div class="ts-qr"></div>
+          </div>
+          <div class="ep-info">
+            <div class="ep-stat">所见即所得</div>
+            <div class="ep-warn">价格 / 名称修改后，下方预览同步更新，确认后再下发刷图。</div>
+          </div>
+        </div>
+      </div>
+      <div class="card-tit">数据字段</div>
+      <div class="edit-form">
+        <div class="f-row"><div class="fk">名称<span class="en">name</span></div><div class="fv"><input id="inName" value="可乐 500ml 促销装" oninput="renderPreview()"></div></div>
+        <div class="f-row"><div class="fk">价格<span class="en">price</span></div><div class="fv"><input id="inPrice" value="19.90" inputmode="decimal" oninput="renderPreview()"><span class="unit">元</span></div></div>
+        <div class="f-row"><div class="fk">原价<span class="en">old_price</span></div><div class="fv"><input value="25.00" inputmode="decimal"><span class="unit">元</span></div></div>
+        <div class="f-row"><div class="fk">条码<span class="en">upca</span></div><div class="fv"><input id="inBarcode" value="6901234567892" maxlength="13" oninput="renderPreview()"><span class="hint-chip">12~13 位</span></div></div>
+        <div class="f-row"><div class="fk">会员价<span class="en">member</span></div><div class="fv"><input value="18.50" inputmode="decimal"><span class="unit">元</span></div></div>
+      </div>
+      <div class="card-tit" style="margin:16px 0 8px">下发方式</div>
+      <div class="edit-form" style="margin:0">
+        <div class="f-row"><div class="fk">目标设备</div><div class="fv" style="justify-content:space-between"><span style="font-size:13px">ESL-1043 · 货架A</span><span class="hint-chip">1 台</span></div></div>
+        <div class="f-row"><div class="fk">下发动作</div><div class="fv"><span style="font-size:13px">仅保存</span> <span class="hint-chip" style="margin-left:6px">保存并刷图</span></div></div>
+      </div>
+      <div class="edit-actions" style="margin-top:14px">
+        <button class="save-btn save-primary" onclick="showSavePop()">保存</button>
+        <button class="save-btn save-sync" onclick="switchTab('flash')">保存并刷图</button>
+      </div>
+    </div>
+    <div class="mock-hint" style="margin-top:14px"><b>数据修改改造点：</b>字段中文别名+格式提示、实时标签预览、下发方式明确</div>
+  </div>
+</div>
+
+<!-- 门店切换下拉 -->
+<div class="store-drop" id="storeDrop" onclick="if(event.target===this)toggleStoreDrop(false)">
+  <div class="panel">
+    <div class="pd-tit">切换门店 <span class="close" onclick="toggleStoreDrop(false)">×</span></div>
+    <div class="store-item" onclick="pickStore(this)">
+      <div class="lg">🏬</div><div><div class="sn">XX 连锁 · 一号店</div><div class="sd">3 网关 · 11 标签</div></div><div class="ok2">✓</div>
+    </div>
+    <div class="store-item" onclick="pickStore(this)">
+      <div class="lg">🏬</div><div><div class="sn">XX 连锁 · 二号店</div><div class="sd">2 网关 · 8 标签</div></div>
+    </div>
+    <div class="store-item" onclick="pickStore(this)">
+      <div class="lg">🏭</div><div><div class="sn">仓库中心</div><div class="sd">5 网关 · 24 标签</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- 保存成功弹窗 -->
+<div class="save-pop" id="savePop">
+  <div class="panel">
+    <div class="ok-icon">✓</div>
+    <div class="sp-tit">保存成功</div>
+    <div class="sp-sub">数据已更新，标签内容将在数秒内同步</div>
+    <button class="sp-btn" onclick="closeSavePop()">完成</button>
+  </div>
+</div>
+
+<script>
+/* ===== 通用：模块切换 ===== */
+function switchTab(p){
+  document.querySelectorAll('.tab-nav .tab').forEach(t=>t.classList.toggle('active',t.dataset.p===p));
+  document.querySelectorAll('.page').forEach(x=>x.classList.toggle('active',x.id==='page-'+p));
+  window.scrollTo(0,0);
+}
+
+/* ===== 模块A：门店切换 ===== */
+function toggleStoreDrop(show){ document.getElementById('storeDrop').classList.toggle('show',show); }
+function pickStore(el){
+  const n=el.querySelector('.sn').textContent;
+  const d=el.querySelector('.sd').textContent;
+  document.getElementById('storeName').textContent=n;
+  document.getElementById('storeMeta').textContent=d;
+  el.querySelectorAll('.ok2').forEach(x=>x.textContent='');
+  let t=el.querySelector('.ok2'); if(!t){t=document.createElement('span');t.className='ok2';el.appendChild(t);} t.textContent='✓';
+  toggleStoreDrop(false);
+}
+
+/* ===== 模块B：离线刷图 ===== */
+const fDevices=[
+  {name:'门口货架 · 价签',mac:'8C:CE:4E:00:01:2A',rssi:-42},
+  {name:'仓库A-02 库位牌',mac:'8C:CE:4E:00:03:5F',rssi:-58},
+  {name:'办公区 桌牌',mac:'8C:CE:4E:00:07:9C',rssi:-65}
+];
+let fTimers=[],fRunning=false,fDone=0;
+const ringSize=34,bigSize=76;
+function ringSvg(pct,size,color,id){
+  const r=size/2-4,c=2*Math.PI*r;
+  return `<svg class="progress-ring" width="${size}" height="${size}">
+    <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="#eef1f8" stroke-width="3"/>
+    <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="${color}" stroke-width="3" stroke-linecap="round"
+      stroke-dasharray="${c}" stroke-dashoffset="${c}" id="${id}-arc" style="transition:stroke-dashoffset .4s"/>
+  </svg>`;
+}
+function setArc(id,pct){
+  const el=document.getElementById(id+'-arc');
+  const r=(id==='bigRing'?bigSize:ringSize)/2-4;
+  if(el) el.style.strokeDashoffset=2*Math.PI*r*(1-pct/100);
+}
+function renderFDevices(){
+  document.getElementById('fDevices').innerHTML=fDevices.map((d,i)=>
+    `<div class="dev-item" id="fd${i}">
+      <div class="avatar">ESL</div>
+      <div class="info"><div class="name">${d.name}</div><div class="sub">${d.mac} · RSSI ${d.rssi}dBm</div></div>
+      <div class="status" id="fst${i}"><span class="stat-txt st-wait">待刷图</span></div>
+    </div>`).join('');
+}
+function initBigRing(){
+  const box=document.getElementById('bigRing');
+  box.innerHTML=ringSvg(0,bigSize,'#2ec47b','bigRing')+
+    `<div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center"><div class="pct" id="fBigPct">0%</div><div class="plb">进度</div></div>`;
+}
+function flashStart(){
+  if(fRunning) return;
+  fRunning=true; fDone=0;
+  document.getElementById('fStart').style.display='none';
+  document.getElementById('fReset').style.display='block';
+  document.getElementById('fBanner').className='banner';
+  document.getElementById('fEcho').style.display='none';
+  document.getElementById('fTit').textContent='正在刷图中…';
+  document.getElementById('fEta').style.display='inline-block';
+  document.getElementById('fs1').classList.add('done');
+  setTimeout(()=>document.getElementById('fs2').classList.add('done'),600);
+  setTimeout(()=>document.getElementById('fs3').classList.add('done'),2500);
+  fDevices.forEach((d,i)=>{ scheduleFlash(i); });
+}
+function scheduleFlash(i){
+  setTimeout(()=>{
+    const st=document.getElementById('fst'+i);
+    st.innerHTML='<span class="stat-txt st-queue">排队中</span>';
+    setTimeout(()=>{
+      let pct=0; setDevRing(i,0,'#5b7cfa');
+      const iv=setInterval(()=>{
+        pct+=10+Math.random()*15;
+        if(i===1 && pct>45){clearInterval(iv);failFlash(i);return;}
+        if(pct>=100){clearInterval(iv);okFlash(i);return;}
+        setDevRing(i,Math.floor(pct),'#5b7cfa');
+      },300);
+    },500+i*900);
+  },300+i*900);
+}
+function setDevRing(i,pct,color){
+  const st=document.getElementById('fst'+i);
+  st.innerHTML=ringSvg(pct,ringSize,color,'fring'+i)+
+    `<span class="stat-txt st-run">刷图中 ${pct}%</span>`;
+}
+function okFlash(i){
+  document.getElementById('fst'+i).innerHTML='<span class="stat-txt st-ok">已完成 ✓</span>';
+  fDone++; updateBigF();
+  if(fDone===fDevices.length) finishFlash();
+}
+function failFlash(i){
+  const st=document.getElementById('fst'+i);
+  st.innerHTML='<span class="stat-txt st-fail">失败</span><span class="stat-sub st-fail">信号弱，点击重试</span>';
+  st.style.cursor='pointer';
+  st.onclick=()=>retryFlash(i);
+  fDone++; updateBigF();
+}
+function retryFlash(i){
+  const st=document.getElementById('fst'+i); st.onclick=null;
+  let pct=0; setDevRing(i,0,'#5b7cfa');
+  const iv=setInterval(()=>{ pct+=15; if(pct>=100){clearInterval(iv);okFlash(i);} else setDevRing(i,pct,'#5b7cfa'); },300);
+}
+function updateBigF(){
+  const pct=Math.floor(fDone/fDevices.length*100);
+  document.getElementById('fBigPct').textContent=pct+'%';
+  setArc('bigRing',pct);
+  document.getElementById('fOk').textContent=fDone;
+}
+function finishFlash(){
+  fRunning=false;
+  setArc('bigRing',100);
+  document.getElementById('fBigPct').textContent='100%';
+  document.getElementById('fTit').textContent='全部完成';
+  document.getElementById('fEta').style.display='none';
+  const b=document.getElementById('fBanner');
+  b.className='banner show ok';
+  b.innerHTML='<span class="icon">✓</span>全部 3 台设备刷图完成，耗时约 9 秒';
+  document.getElementById('fEcho').style.display='block';
+  document.getElementById('fEchoList').innerHTML=fDevices.map(d=>
+    `<div class="screen"><div class="sc"><div class="qrcode"></div></div><div class="nm">${d.name}</div><div class="tag-ok">刷图成功</div></div>`).join('');
+}
+function flashReset(){
+  fTimers.forEach(t=>clearTimeout(t));
+  fRunning=false; fDone=0;
+  ['fs1','fs2','fs3'].forEach(id=>{const e=document.getElementById(id);e.classList.remove('done','active');});
+  document.getElementById('fs1').classList.add('active');
+  document.getElementById('fBigPct').textContent='0%'; setArc('bigRing',0);
+  document.getElementById('fTit').textContent='准备就绪';
+  document.getElementById('fOk').textContent='0';
+  document.getElementById('fEta').style.display='none';
+  document.getElementById('fStart').style.display='block';
+  document.getElementById('fReset').style.display='none';
+  document.getElementById('fBanner').className='banner';
+  document.getElementById('fEcho').style.display='none';
+  renderFDevices();
+}
+
+/* ===== 模块C：标签详情 刷新预览 ===== */
+function refreshShot(el){
+  el.textContent='⟳';
+  el.style.transition='transform .5s';
+  el.style.transform='rotate(360deg)';
+  setTimeout(()=>{el.style.transform='rotate(0)';el.textContent='✓';setTimeout(()=>el.textContent='⟳',800);},500);
+}
+
+/* ===== 模块D：数据修改 实时预览 ===== */
+function renderPreview(){
+  const n=document.getElementById('inName').value||'未命名';
+  const p=document.getElementById('inPrice').value||'0.00';
+  document.getElementById('pvName').textContent=n;
+  document.getElementById('pvPrice').textContent=p;
+}
+function showSavePop(){ document.getElementById('savePop').classList.add('show'); }
+function closeSavePop(){ document.getElementById('savePop').classList.remove('show'); }
+
+/* 初始化 */
+initBigRing();
+renderFDevices();
+renderPreview();
+
+/* 顶部 Tab 点击绑定 */
+document.querySelectorAll('.tab-nav .tab').forEach(tab=>{
+  tab.addEventListener('click',()=>switchTab(tab.dataset.p));
+});
+</script>
+</body>
+</html>
