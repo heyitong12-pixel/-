@@ -4,8 +4,9 @@ on:
   workflow_dispatch: # 仅手动触发一次，启用 Pages 后 GitHub 会自动部署 main 分支
 
 permissions:
-  contents: read
-  pages: write
+  contents: write      # 读取仓库内容 + Pages 站点元数据
+  pages: write         # Pages 写权限
+  administration: write # 启用/禁用 Pages 站点需要仓库管理权限
 
 jobs:
   enable-pages:
