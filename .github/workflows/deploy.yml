@@ -1,59 +1,34 @@
 name: Deploy to GitHub Pages
 
 on:
-  push:
-    branches: [main]
-  workflow_dispatch: # 支持手动触发
+  workflow_dispatch: # 仅手动触发一次，启用 Pages 后 GitHub 会自动部署 main 分支
 
 permissions:
   contents: read
   pages: write
-  id-token: write
-
-# 防止重复运行
-concurrency:
-  group: pages
-  cancel-in-progress: false
 
 jobs:
-  deploy:
+  enable-pages:
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      # 首次运行：自动通过 GitHub Pages API 启用 Pages（source: branch = main）
-      # 之后运行会被跳过（Pages 已启用）
+      # 检查/启用 GitHub Pages（classic，source = main 分支根目录）
+      # 启用后 GitHub 会自动监听 main 分支的变更并部署，无需额外 action
       - name: Enable GitHub Pages
-        if: ${{ github.event_name == 'workflow_dispatch' }}
         uses: actions/github-script@v7
         with:
           script: |
+            const { owner, repo } = context.repo;
             try {
-              await github.rest.repos.getPages({ owner: context.repo.owner, repo: context.repo.repo });
-              core.info('Pages already enabled, skip.');
+              const { data } = await github.rest.repos.getPages({ owner, repo });
+              core.info(`Pages 已启用，source: ${JSON.stringify(data.source)}`);
             } catch (e) {
               if (e.status === 404) {
                 await github.rest.repos.createPagesSite({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
+                  owner, repo,
                   source: { branch: 'main', path: '/' }
                 });
-                core.info('GitHub Pages enabled from branch main.');
-              } else { throw e; }
+                core.info('GitHub Pages 已启用（source: main 分支根目录），GitHub 会自动部署。');
+              } else {
+                core.setFailed(`启用 Pages 失败: ${e.message}`);
+              }
             }
-
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
-
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: '.'
-
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
