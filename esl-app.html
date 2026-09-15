@@ -1,0 +1,1412 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><title>电子标签刷图 APP 完整原型</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,"Segoe UI",Roboto,"PingFang SC","Microsoft YaHei",sans-serif;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{background:#eef1f8;color:#222;overflow:hidden}
+/* 手机框架 */
+.app{max-width:430px;margin:0 auto;height:100vh;display:flex;flex-direction:column;background:#f4f6fb;position:relative;box-shadow:0 0 30px rgba(0,0,0,.08)}
+.main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:70px}
+/* 顶栏 */
+.topbar{background:linear-gradient(135deg,#5b7cfa 0%,#6a5bfa 100%);color:#fff;padding:10px 16px;display:flex;align-items:center;gap:10px;flex-shrink:0;z-index:20}
+.topbar .title{font-size:13px;font-weight:400;opacity:.85;flex:1;letter-spacing:.5px}
+.topbar .act{font-size:13px;cursor:pointer;padding:5px 12px;border-radius:16px;background:rgba(255,255,255,.2);display:flex;align-items:center;gap:4px}
+.topbar .act:hover{background:rgba(255,255,255,.3)}
+/* 底部导航 */
+.tabbar{position:absolute;bottom:0;left:0;right:0;background:#fff;display:flex;border-top:1px solid #f0f0f0;z-index:30;padding-bottom:env(safe-area-inset-bottom)}
+.tabbar .tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 0;font-size:10px;color:#8a94a6;cursor:pointer;transition:color .2s}
+.tabbar .tab .ti{font-size:20px;line-height:1}
+.tabbar .tab.active{color:#5b7cfa;font-weight:600}
+/* 页面容器 */
+.page{display:none;padding-bottom:10px}
+.page.active{display:block}
+.mock-hint{font-size:11px;color:#9aa3b5;text-align:center;padding:8px 16px;background:#eef2ff;border-radius:8px;margin:12px}
+.mock-hint b{color:#5b7cfa}
+
+/* ===== 通用卡片 ===== */
+.card{background:#fff;border-radius:12px;box-shadow:0 1px 6px rgba(0,0,0,.04);margin:0 12px}
+.card-tit{font-size:13px;font-weight:600;color:#333;margin:16px 12px 10px;display:flex;justify-content:space-between;align-items:center}
+.card-tit .more{font-size:12px;color:#5b7cfa;font-weight:400;cursor:pointer}
+.empty{text-align:center;color:#b0b6c5;font-size:13px;padding:40px 0}
+.empty .e-ic{font-size:40px;margin-bottom:10px}
+
+
+.store-bar{background:linear-gradient(135deg,#5b7cfa 0%,#6a5bfa 100%);color:#fff;padding:16px 16px 18px}
+.store-bar .greet{font-size:13px;opacity:.9;margin-bottom:8px}
+.store-switch{display:flex;align-items:center;gap:10px;cursor:pointer}
+.store-switch .logo{width:46px;height:46px;border-radius:12px;background:rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.store-switch .s-name{font-size:20px;font-weight:700;letter-spacing:.3px}
+.store-switch .s-meta{font-size:11px;opacity:.85;margin-top:4px}
+.store-switch .s-meta b{font-weight:600}
+.store-switch .arrow{margin-left:auto;font-size:15px;opacity:.85;background:rgba(255,255,255,.18);width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.alert-bar{background:#fff;margin:12px 12px 0;border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 1px 6px rgba(0,0,0,.04);border-left:4px solid #e0574b;cursor:pointer}
+.alert-bar .a-icon{font-size:20px}.alert-bar .a-txt{font-size:13px;color:#333;flex:1}
+.alert-bar .a-sub{font-size:11px;color:#999;margin-top:2px}.alert-bar .a-go{color:#e0574b;font-size:16px}
+.quick{background:#fff;margin:12px;border-radius:12px;padding:14px;box-shadow:0 1px 6px rgba(0,0,0,.04)}
+.quick .grp-tit{font-size:12px;color:#999;margin:6px 0 10px}
+.quick .grp-tit:first-child{margin-top:0}
+/* 金刚区核心主按钮（两个同级并排） */
+.hero-row{display:flex;gap:10px;margin-bottom:6px}
+.hero-btn{flex:1;display:flex;align-items:center;gap:10px;background:linear-gradient(135deg,#5b7cfa,#6a5bfa);color:#fff;border-radius:14px;padding:13px 12px;cursor:pointer;box-shadow:0 4px 14px rgba(91,124,250,.25)}
+.hero-btn:active{transform:scale(.97)}
+.hero-btn .hb-icon{font-size:22px;background:rgba(255,255,255,.2);width:44px;height:44px;border-radius:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.hero-btn .hb-txt{flex:1;display:flex;flex-direction:column;gap:1px}
+.hero-btn .hb-txt b{font-size:15px;font-weight:700}
+.hero-btn .hb-txt em{font-size:10px;font-style:normal;opacity:.85}
+.hero-btn .hb-go{font-size:15px;font-weight:700;opacity:.85}
+.quick .grp-tit.grp-minor{margin-top:16px;padding-top:12px;border-top:1px dashed #eef1f8;color:#b0b6c5}
+.quick .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px 8px}
+.quick .item{display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer}
+.quick .item .ic{width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px}
+.quick .item .nm{font-size:11px;color:#555;text-align:center;line-height:1.3}
+.quick .item .nm b{display:block;color:#333}
+/* 低频功能视觉弱化 */
+.quick .grid-minor .item{opacity:.65}
+.quick .grid-minor .item .ic{width:40px;height:40px;border-radius:12px;font-size:18px;background:#f2f4f8;color:#9aa3b5}
+.quick .grid-minor .item .nm{font-size:10px;color:#8a94a6}
+.quick .grid-minor .item .nm b{display:block;color:#8a94a6;font-weight:500}
+.ic-blue{background:#edf2ff;color:#5b7cfa}.ic-green{background:#e8faf1;color:#2ec47b}.ic-orange{background:#fff3e6;color:#e6a23c}.ic-purple{background:#f2ecff;color:#7a5bfa}.ic-gray{background:#f2f4f8;color:#7a8599}
+.ic-red{background:#fdeeee;color:#e0574b}.ic-cyan{background:#e6f7fb;color:#12a5c9}.ic-yellow{background:#fff9e6;color:#d98e04}.ic-teal{background:#e6f8f3;color:#0da48a}.ic-indigo{background:#eae9fd;color:#5c4fd0}
+.stats{background:#fff;margin:0 12px 12px;border-radius:12px;padding:14px;box-shadow:0 1px 6px rgba(0,0,0,.04);display:flex}
+.stat{flex:1;text-align:center;position:relative}
+.stat+.stat::before{content:"";position:absolute;left:0;top:20%;height:60%;width:1px;background:#eef1f8}
+.stat .num{font-size:20px;font-weight:700}
+.stat .num.on{color:#2ec47b}.stat .num.warn{color:#e6a23c}.stat .num.off{color:#9aa3b5}
+.stat .lb{font-size:11px;color:#888;margin-top:4px}
+/* 设备概览（紧凑横条） */
+.overview-bar{background:#fff;margin:12px 12px 0;border-radius:12px;padding:12px 8px 10px;box-shadow:0 1px 6px rgba(0,0,0,.04);display:flex}
+.ov-item{flex:1;text-align:center;position:relative;cursor:pointer}
+.ov-item+.ov-item::before{content:"";position:absolute;left:0;top:15%;height:70%;width:1px;background:#eef1f8}
+.ov-item:active{opacity:.7}
+.ov-name{font-size:12px;color:#666;margin-bottom:5px}
+.ov-nums{font-size:12px;font-weight:600;white-space:nowrap}
+.ov-nums .on{color:#2ec47b}.ov-nums .warn{color:#e6a23c}.ov-nums .off{color:#9aa3b5}
+.ov-go{font-size:10px;color:#5b7cfa;margin-top:5px;opacity:.8}
+/* 待办/告警提示条 */
+.todo-bar{background:#fff;margin:10px 12px 0;border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 1px 6px rgba(0,0,0,.04);border-left:4px solid #e6a23c;cursor:pointer}
+.todo-bar .tb-ic{font-size:18px}
+.todo-bar .tb-txt{flex:1;font-size:13px;color:#333}
+.todo-bar .tb-txt b{color:#e0574b}
+.todo-bar .tb-go{font-size:12px;color:#5b7cfa;font-weight:600}
+.recent{background:#fff;margin:0 12px;border-radius:12px;padding:6px 14px;box-shadow:0 1px 6px rgba(0,0,0,.04)}
+.recent .row{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid #f4f6fb;font-size:13px}
+.recent .row:last-child{border-bottom:none}
+.recent .ic2{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.recent .tx{flex:1}.recent .tx .sub{font-size:11px;color:#999;margin-top:2px}
+.recent .st2{font-size:11px;color:#2ec47b;font-weight:600}
+
+/* ===== 标签列表 ===== */
+.filter{display:flex;gap:8px;padding:12px;overflow-x:auto}
+.chip{flex-shrink:0;padding:7px 14px;border-radius:16px;font-size:12px;background:#fff;color:#666;cursor:pointer;border:1px solid #eef1f8;display:inline-flex;align-items:center;gap:4px}
+.chip.active{background:#5b7cfa;color:#fff;border-color:#5b7cfa;font-weight:600}
+.chip em{font-style:normal;font-size:10px;background:rgba(0,0,0,.06);padding:0 6px;border-radius:8px;line-height:1.5}
+.chip.active em{background:rgba(255,255,255,.25)}
+.searchbar{margin:0 12px 12px;display:flex;align-items:center;gap:8px;background:#fff;border-radius:10px;padding:4px 12px}
+.searchbar input{flex:1;border:none;outline:none;font-size:13px;padding:10px 0;background:transparent}
+.searchbar .sc{color:#5b7cfa;font-size:16px;cursor:pointer}
+.tag-list{padding:0 12px;display:flex;flex-direction:column;gap:10px}
+.tag-item{background:#fff;border-radius:12px;padding:14px;display:flex;align-items:flex-start;gap:12px;box-shadow:0 1px 6px rgba(0,0,0,.04);cursor:pointer}
+.tag-item:active{background:#f8faff}
+.tag-item .tg-shot{width:52px;height:68px;border:1px solid #e0e0e0;border-radius:6px;background:linear-gradient(135deg,#fff,#ececec);display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+.tag-item .tg-shot .qrcode{width:30px;height:30px;background:repeating-conic-gradient(#222 0% 25%,transparent 0% 50%);background-size:5px 5px;opacity:.8}
+.tag-item .tg-info{flex:1;min-width:0}
+.tag-item .tg-name{font-size:14px;font-weight:600;color:#222;display:flex;align-items:center;justify-content:space-between;gap:6px}
+.tag-item .tg-status{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:3px 8px;border-radius:8px;flex-shrink:0}
+.tg-on{background:#e9faf1;color:#1c9d5f}.tg-off{background:#f2f4f8;color:#8a94a6}.tg-warn{background:#fff7e6;color:#d48806}
+.tdot{width:6px;height:6px;border-radius:50%;display:inline-block}
+.st-dot-on{background:#2ec47b}.st-dot-off{background:#c9cfdd}
+.tag-item .tg-mac{font-size:11px;color:#888;margin-top:4px;font-family:Consolas,Menlo,monospace}
+.tag-item .tg-meta{display:flex;gap:10px;margin-top:7px;padding-top:7px;border-top:1px dashed #f0f0f0}
+.tg-meta-item{font-size:11px;color:#666;display:inline-flex;align-items:center;gap:3px}
+.sig-bars{display:inline-flex;gap:2px;align-items:flex-end;height:11px}
+.sig-bars i{width:3px;background:#2ec47b;border-radius:1px;display:inline-block}
+.sig-bars i:nth-child(1){height:3px}.sig-bars i:nth-child(2){height:5px}.sig-bars i:nth-child(3){height:7px}.sig-bars i:nth-child(4){height:9px}.sig-bars i:nth-child(5){height:11px}
+.tag-item .tg-arrow{color:#c9cfdd;font-size:18px;align-self:center;flex-shrink:0}
+.tag-item .tg-btn{flex-shrink:0;align-self:center;background:#5b7cfa;color:#fff;border:none;border-radius:8px;padding:7px 10px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap}
+.tag-item .tg-btn:active{transform:scale(.95);background:#4a68e0}
+.tag-item.is-offline .tg-name{color:#555}
+.tag-item.is-offline .tg-shot{opacity:.5}
+.check{width:20px;height:20px;border:2px solid #c9cfdd;border-radius:5px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;flex-shrink:0}
+.check.on{background:#5b7cfa;border-color:#5b7cfa}
+
+/* ===== 标签详情 ===== */
+.detail-wrap{background:#fff;margin:12px;border-radius:12px;padding:16px;box-shadow:0 1px 6px rgba(0,0,0,.04)}
+.screen-shot{display:flex;gap:14px;align-items:center}
+.shot-box{width:120px;height:158px;background:linear-gradient(135deg,#fff 0%,#e8e8e8 100%);border:1px solid #ddd;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;position:relative;overflow:hidden;flex-shrink:0}
+.shot-box .qrcode{width:70px;height:70px;background:repeating-conic-gradient(#222 0% 25%,transparent 0% 50%);background-size:9px 9px;opacity:.9}
+.shot-box .tline{font-size:9px;color:#333;letter-spacing:.5px}
+.shot-box .refresh{position:absolute;right:6px;top:6px;background:#5b7cfa;color:#fff;width:24px;height:24px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;cursor:pointer}
+.shot-info{flex:1}
+.shot-info .si-tit{font-size:14px;font-weight:600;margin-bottom:6px}
+.shot-info .si-meta{font-size:12px;color:#666;line-height:1.9}
+.shot-info .si-meta b{color:#222}
+.auto-update{display:flex;align-items:center;justify-content:space-between;background:#f7f9ff;border-radius:10px;padding:12px 14px;margin-top:14px}
+.auto-update .au-txt{font-size:13px}.auto-update .au-sub{font-size:11px;color:#999;margin-top:3px}
+.switch{width:46px;height:26px;border-radius:13px;background:#d5d9e6;position:relative;cursor:pointer;transition:background .2s}
+.switch.on{background:#2ec47b}
+.switch::after{content:"";position:absolute;top:2px;left:2px;width:22px;height:22px;border-radius:50%;background:#fff;transition:left .2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.switch.on::after{left:22px}
+.detail-rows{background:#fff;margin:12px;border-radius:12px;padding:6px 16px;box-shadow:0 1px 6px rgba(0,0,0,.04)}
+.d-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #f4f6fb;font-size:13px}
+.d-row:last-child{border-bottom:none}
+.d-row .k{color:#666}.d-row .v{color:#222;font-weight:500}
+.signal-bar{display:inline-flex;gap:2px;align-items:flex-end;height:14px}
+.signal-bar i{width:4px;background:#2ec47b;border-radius:1px;display:inline-block}
+.signal-bar i:nth-child(1){height:4px}.signal-bar i:nth-child(2){height:7px}.signal-bar i:nth-child(3){height:10px}.signal-bar i:nth-child(4){height:13px}.signal-bar i:nth-child(5){height:7px;background:#c9cfdd}
+.detail-actions{display:flex;gap:10px;margin:0 12px}
+.da{flex:1;padding:12px;border-radius:10px;text-align:center;font-size:14px;font-weight:600;cursor:pointer}
+.da-flash{background:linear-gradient(135deg,#5b7cfa,#6a5bfa);color:#fff}
+.da-outline{background:#fff;color:#e0574b;border:1px solid #e0574b}
+.history{background:#fff;margin:12px;border-radius:12px;padding:6px 16px;box-shadow:0 1px 6px rgba(0,0,0,.04)}
+.h-row{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid #f4f6fb;font-size:13px}
+.h-row:last-child{border-bottom:none}
+.h-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.h-dot.ok{background:#2ec47b}.h-dot.fail{background:#e0574b}
+.h-txt{flex:1}.h-txt .h-sub{font-size:11px;color:#999;margin-top:2px}
+.h-st{font-size:11px;font-weight:600}
+
+/* ===== 刷图 ===== */
+.flash-step{display:flex;margin:12px;background:#fff;border-radius:12px;padding:14px 12px;box-shadow:0 1px 6px rgba(0,0,0,.04)}
+.fstep{flex:1;text-align:center;position:relative;cursor:pointer}
+.fstep .dot{width:26px;height:26px;border-radius:50%;margin:0 auto 6px;display:flex;align-items:center;justify-content:center;font-size:12px;background:#eef1f8;color:#999}
+.fstep.active .dot{background:#5b7cfa;color:#fff}
+.fstep.done .dot{background:#2ec47b;color:#fff}
+.fstep .st{font-size:11px;color:#999}
+.fstep.active .st{color:#222;font-weight:600}
+.fstep:not(:last-child)::after{content:"";position:absolute;top:12px;right:-50%;width:100%;height:2px;background:#eef1f8}
+.fstep.done:not(:last-child)::after{background:#2ec47b}
+.fpane{display:none}
+.fpane.active{display:block}
+/* 模板编辑 */
+.preview-panel{background:#fff;border-radius:12px;padding:14px;margin:0 12px;box-shadow:0 1px 6px rgba(0,0,0,.04)}
+.pp-tit{font-size:12px;color:#999;margin-bottom:10px;display:flex;justify-content:space-between}
+.pp-tit .live{color:#e6a23c;font-weight:600}
+.tag-screen{width:110px;height:146px;background:#fff;border:2px solid #ddd;border-radius:8px;padding:10px;display:flex;flex-direction:column;justify-content:space-between;box-shadow:inset 0 0 0 1px #eee;flex-shrink:0}
+.tag-screen .ts-line{display:flex;justify-content:space-between;font-size:8px;color:#333}
+.tag-screen .ts-name{font-size:9px;color:#333;margin-top:4px;word-break:break-all;line-height:1.4}
+.tag-screen .ts-price{font-size:20px;font-weight:700;color:#222}
+.tag-screen .ts-qr{width:44px;height:44px;background:repeating-conic-gradient(#222 0% 25%,transparent 0% 50%);background-size:7px 7px;margin:4px auto 0}
+.pp-live{display:flex;gap:12px;align-items:center}
+.pp-info{flex:1}.pp-info .pp-stat{font-size:13px;font-weight:600;margin-bottom:6px}
+.pp-info .pp-warn{font-size:11px;color:#e6a23c;background:#fff7e6;padding:6px 8px;border-radius:6px;line-height:1.5}
+.edit-form{background:#fff;border-radius:12px;padding:6px 16px;margin:0 12px;box-shadow:0 1px 6px rgba(0,0,0,.04)}
+.f-row{display:flex;align-items:center;padding:11px 0;border-bottom:1px solid #f4f6fb;gap:12px}
+.f-row:last-child{border-bottom:none}
+.f-row .fk{width:76px;font-size:13px;color:#666;flex-shrink:0}
+.f-row .fk .en{display:block;font-size:10px;color:#b0b6c5}
+.f-row .fv{flex:1;display:flex;align-items:center;gap:6px}
+.f-row input{flex:1;border:1px solid #e0e4f0;border-radius:8px;padding:8px 10px;font-size:13px;outline:none}
+.f-row input:focus{border-color:#5b7cfa}
+.hint-chip{display:inline-block;font-size:10px;color:#5b7cfa;background:#edf2ff;padding:2px 8px;border-radius:8px;flex-shrink:0}
+/* 目标选择 */
+.target-list{padding:0 12px;display:flex;flex-direction:column;gap:10px}
+.sel-all{display:flex;align-items:center;justify-content:space-between;background:#fff;margin:0 12px 12px;border-radius:10px;padding:12px 14px;box-shadow:0 1px 6px rgba(0,0,0,.04)}
+.sel-all .sa-txt{font-size:13px}.sel-all .sa-sub{font-size:11px;color:#999;margin-top:3px}
+/* 进度 */
+.progress-panel{background:#fff;margin:12px;border-radius:12px;padding:16px;box-shadow:0 1px 6px rgba(0,0,0,.04)}
+.big-ring{width:76px;height:76px;position:relative;flex-shrink:0}
+.big-ring .pct{font-size:18px;font-weight:700}
+.progress-panel .overall{display:flex;align-items:center;gap:16px}
+.progress-panel .info{flex:1}
+.progress-panel .info .tit{font-size:14px;font-weight:600;margin-bottom:6px}
+.progress-panel .info .meta{font-size:12px;color:#666;line-height:1.8}
+.progress-panel .info .meta b{color:#222}
+.eta{display:inline-block;font-size:12px;color:#fff;background:#5b7cfa;padding:2px 8px;border-radius:10px;margin-top:4px}
+.progress-ring{width:34px;height:34px;position:relative}
+.progress-ring svg{transform:rotate(-90deg)}
+/* 底部操作条 */
+.cta{position:absolute;bottom:56px;left:0;right:0;max-width:430px;margin:0 auto;padding:10px 12px;background:#fff;border-top:1px solid #f0f0f0;z-index:25}
+.btn{flex:1;padding:13px;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;transition:transform .1s}
+.btn:active{transform:scale(.97)}
+.btn-primary{background:linear-gradient(135deg,#5b7cfa,#6a5bfa);color:#fff}
+.btn-ghost{background:#fff;color:#5b7cfa;border:1px solid #5b7cfa}
+.cta .row{display:flex;gap:10px}
+
+/* ===== 模板库 ===== */
+.tpl-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;padding:0 12px}
+.tpl-card{background:#fff;border-radius:12px;padding:12px;box-shadow:0 1px 6px rgba(0,0,0,.04);cursor:pointer}
+.tpl-card .th{width:100%;height:110px;border:1px solid #e0e0e0;border-radius:8px;background:linear-gradient(135deg,#fff,#ececec);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;position:relative}
+.tpl-card .th .tname{font-size:9px;color:#333}
+.tpl-card .th .tprice{font-size:14px;font-weight:700}
+.tpl-card .th .tqr{width:36px;height:36px;background:repeating-conic-gradient(#222 0% 25%,transparent 0% 50%);background-size:6px 6px}
+.tpl-card .th .ttype{position:absolute;top:6px;left:6px;font-size:9px;background:#5b7cfa;color:#fff;padding:2px 6px;border-radius:6px}
+.tpl-card .th .tfav{position:absolute;top:4px;right:6px;font-size:14px}
+.tpl-card .tn{font-size:13px;font-weight:500;margin-top:8px}
+.tpl-card .ts{font-size:11px;color:#999;margin-top:3px;display:flex;justify-content:space-between}
+.tpl-card .ts .use{color:#5b7cfa;font-weight:600}
+
+/* ===== 我的 ===== */
+.profile{background:linear-gradient(135deg,#5b7cfa 0%,#6a5bfa 100%);color:#fff;padding:24px 16px;display:flex;align-items:center;gap:14px}
+.profile .av{width:56px;height:56px;border-radius:50%;background:rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;font-size:26px}
+.profile .p-name{font-size:18px;font-weight:700}
+.profile .p-meta{font-size:12px;opacity:.85;margin-top:4px}
+.menu-list{background:#fff;margin:12px;border-radius:12px;padding:4px 16px;box-shadow:0 1px 6px rgba(0,0,0,.04)}
+.m-row{display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:1px solid #f4f6fb;cursor:pointer}
+.m-row:last-child{border-bottom:none}
+.m-row .mi{font-size:18px;width:24px;text-align:center}
+.m-row .mt{flex:1;font-size:14px}
+.m-row .msub{font-size:12px;color:#999;margin-left:8px}
+.m-row .marrow{color:#c9cfdd;font-size:16px}
+.badge-dot{background:#e0574b;color:#fff;font-size:10px;padding:1px 6px;border-radius:8px}
+
+/* ===== 弹窗 ===== */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:80;align-items:flex-end;justify-content:center}
+.overlay.show{display:flex}
+.sheet{background:#fff;width:100%;max-width:430px;border-radius:16px 16px 0 0;padding:16px 16px 26px;max-height:80vh;overflow-y:auto}
+.sheet .sh-tit{font-size:15px;font-weight:600;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center}
+.sheet .close{font-size:22px;color:#999;cursor:pointer}
+.store-item{display:flex;align-items:center;gap:10px;padding:12px;border-radius:10px;cursor:pointer}
+.store-item:hover{background:#f5f7ff}
+.store-item .lg{width:36px;height:36px;border-radius:8px;background:#edf2ff;color:#5b7cfa;display:flex;align-items:center;justify-content:center;font-size:16px}
+.store-item .sn{flex:1;font-size:14px}.store-item .sd{font-size:11px;color:#999;margin-top:2px}
+.store-item .ok2{color:#2ec47b}
+.scan-box{background:#eef2ff;border-radius:12px;height:180px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:#5b7cfa;position:relative;overflow:hidden}
+.scan-box .cam{font-size:48px}
+.scan-box .corner{position:absolute;width:40px;height:40px;border:3px solid #5b7cfa}
+.scan-box .c1{top:20px;left:20px;border-right:none;border-bottom:none}
+.scan-box .c2{top:20px;right:20px;border-left:none;border-bottom:none}
+.scan-box .c3{bottom:20px;left:20px;border-right:none;border-top:none}
+.scan-box .c4{bottom:20px;right:20px;border-left:none;border-top:none}
+.scan-line{position:absolute;left:10%;right:10%;height:2px;background:#5b7cfa;animation:scan 2s infinite}
+@keyframes scan{0%{top:20%}50%{top:80%}100%{top:20%}}
+
+/* ===== PRD 侧栏 ===== */
+.prd-toggle{position:fixed;right:16px;bottom:60px;z-index:90;background:#5b7cfa;color:#fff;border:none;border-radius:24px;padding:11px 16px;font-size:13px;font-weight:600;cursor:pointer;box-shadow:0 4px 14px rgba(91,124,250,.35);display:flex;align-items:center;gap:6px}
+.prd-toggle:active{transform:scale(.96)}
+.prd-toggle.on{background:#2ec47b}
+.prd-panel{position:fixed;top:0;right:0;bottom:0;width:400px;max-width:92vw;background:#fff;box-shadow:-4px 0 24px rgba(0,0,0,.12);z-index:95;transform:translateX(105%);transition:transform .3s ease;display:flex;flex-direction:column}
+.prd-panel.show{transform:translateX(0)}
+.prd-head{background:linear-gradient(135deg,#5b7cfa,#6a5bfa);color:#fff;padding:16px 18px;display:flex;align-items:center;gap:10px}
+.prd-head .ph-tit{font-size:15px;font-weight:700;flex:1}
+.prd-head .ph-close{font-size:24px;cursor:pointer;line-height:1;opacity:.9}
+.prd-head .ph-close:hover{opacity:1}
+.prd-body{flex:1;overflow-y:auto;padding:16px 18px 30px;background:#fafbfe}
+.prd-body h2{font-size:14px;color:#5b7cfa;margin:18px 0 8px;padding-bottom:6px;border-bottom:1px solid #eef1f8}
+.prd-body h2:first-child{margin-top:0}
+.prd-body h3{font-size:13px;color:#333;margin:12px 0 6px}
+.prd-body p{font-size:12px;color:#555;line-height:1.7;margin:4px 0}
+.prd-body ul,.prd-body ol{margin:4px 0 4px 20px;padding:0}
+.prd-body li{font-size:12px;color:#555;line-height:1.7}
+.prd-body table{width:100%;border-collapse:collapse;margin:8px 0;font-size:11px}
+.prd-body th{background:#f0f3ff;color:#333;padding:6px 8px;text-align:left;border:1px solid #e3e8f5;font-weight:600}
+.prd-body td{padding:6px 8px;border:1px solid #e8ecf7;color:#555}
+.prd-body .tag{display:inline-block;font-size:10px;padding:1px 8px;border-radius:8px;margin-right:4px}
+.prd-body .tag.p0{background:#fdeeee;color:#e0574b}
+.prd-body .tag.p1{background:#fff3e6;color:#e6a23c}
+.prd-body .tag.p2{background:#e8faf1;color:#2ec47b}
+.prd-body .toc{background:#fff;border:1px solid #e8ecf7;border-radius:10px;padding:12px 14px;margin-bottom:6px}
+.prd-body .toc b{font-size:12px;color:#333}
+.prd-body .toc a{display:block;font-size:11px;color:#5b7cfa;text-decoration:none;padding:3px 0}
+.prd-body .toc a:hover{text-decoration:underline}
+/* 移动端：PRD 面板全屏 */
+@media (max-width:820px){
+  .prd-panel{width:100%;max-width:100%}
+  .prd-toggle{right:10px;bottom:70px}
+}
+/* 宽屏：PRD 打开时手机原型左移 */
+@media (min-width:860px){
+  .app{transition:margin-right .3s ease}
+  body.prd-open .app{margin-right:400px}
+}
+
+/* ===== 设备添加功能 ===== */
+/* 步骤条 */
+.add-step{display:flex;background:#fff;margin:12px;border-radius:12px;padding:14px 12px;box-shadow:0 1px 6px rgba(0,0,0,.04)}
+.astep{flex:1;text-align:center;position:relative}
+.astep .dot{width:26px;height:26px;border-radius:50%;margin:0 auto 6px;display:flex;align-items:center;justify-content:center;font-size:12px;background:#eef1f8;color:#999}
+.astep.active .dot{background:#5b7cfa;color:#fff}
+.astep.done .dot{background:#2ec47b;color:#fff}
+.astep .st{font-size:11px;color:#999}
+.astep.active .st{color:#222;font-weight:600}
+.astep:not(:last-child)::after{content:"";position:absolute;top:12px;right:-50%;width:100%;height:2px;background:#eef1f8}
+.astep.done:not(:last-child)::after{background:#2ec47b}
+/* 设备类型选择 */
+.type-grid{display:grid;grid-template-columns:1fr;gap:12px;padding:0 12px}
+.type-card{display:flex;align-items:center;gap:14px;background:#fff;border-radius:14px;padding:16px;box-shadow:0 1px 6px rgba(0,0,0,.04);cursor:pointer;border:2px solid transparent;transition:all .2s}
+.type-card:hover{border-color:#5b7cfa}
+.type-card .tc-icon{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0}
+.type-card .tc-info{flex:1}
+.type-card .tc-name{font-size:15px;font-weight:600}
+.type-card .tc-desc{font-size:11px;color:#999;margin-top:3px;line-height:1.5}
+.type-card .tc-go{font-size:18px;color:#c9cfdd}
+/* 扫码识别框 */
+.scan-box2{background:#eef2ff;border-radius:12px;height:200px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:#5b7cfa;position:relative;overflow:hidden;margin:0 12px}
+.scan-box2 .cam{font-size:52px}
+.scan-box2 .corner{position:absolute;width:44px;height:44px;border:3px solid #5b7cfa}
+.scan-box2 .c1{top:22px;left:22px;border-right:none;border-bottom:none}
+.scan-box2 .c2{top:22px;right:22px;border-left:none;border-bottom:none}
+.scan-box2 .c3{bottom:22px;left:22px;border-right:none;border-top:none}
+.scan-box2 .c4{bottom:22px;right:22px;border-left:none;border-top:none}
+.scan-line2{position:absolute;left:8%;right:8%;height:2px;background:#5b7cfa;animation:scan 2s infinite}
+/* NFC 提示 */
+.nfc-tip{background:#fff;margin:12px;border-radius:12px;padding:16px;text-align:center;box-shadow:0 1px 6px rgba(0,0,0,.04)}
+.nfc-tip .nf-ic{font-size:40px;margin-bottom:8px}
+.nfc-tip .nf-txt{font-size:13px;color:#333}
+.nfc-tip .nf-sub{font-size:11px;color:#999;margin-top:4px}
+.nfc-tip .nf-wave{width:80px;height:44px;margin:12px auto 0;position:relative}
+.nfc-tip .nf-wave i{position:absolute;left:50%;transform:translateX(-50%);border:2px solid #5b7cfa;border-radius:50%}
+.nfc-tip .nf-wave i:nth-child(1){width:20px;height:20px;bottom:0;opacity:.3}
+.nfc-tip .nf-wave i:nth-child(2){width:36px;height:36px;bottom:0;opacity:.5}
+.nfc-tip .nf-wave i:nth-child(3){width:52px;height:52px;bottom:0;opacity:.8}
+/* 配网 WiFi 选择 */
+.wifi-list{margin:0 12px;display:flex;flex-direction:column;gap:8px}
+.wifi-item{display:flex;align-items:center;gap:10px;background:#fff;border-radius:10px;padding:12px 14px;box-shadow:0 1px 6px rgba(0,0,0,.04);cursor:pointer}
+.wifi-item .wf-icon{font-size:18px}
+.wifi-item .wf-info{flex:1}
+.wifi-item .wf-name{font-size:14px;font-weight:500}
+.wifi-item .wf-meta{font-size:11px;color:#999;margin-top:2px}
+.wifi-item .wf-lock{font-size:14px;color:#c9cfdd}
+.wifi-item.selected{border:2px solid #5b7cfa;background:#f5f8ff}
+.pwd-form{background:#fff;margin:12px;border-radius:12px;padding:6px 16px;box-shadow:0 1px 6px rgba(0,0,0,.04)}
+.pwd-form .pwd-row{display:flex;align-items:center;padding:12px 0;border-bottom:1px solid #f4f6fb;gap:12px}
+.pwd-form .pwd-row:last-child{border-bottom:none}
+.pwd-form .pk{width:80px;font-size:13px;color:#666;flex-shrink:0}
+.pwd-form input{flex:1;border:1px solid #e0e4f0;border-radius:8px;padding:9px 10px;font-size:13px;outline:none}
+.pwd-form input:focus{border-color:#5b7cfa}
+/* 添加成功 */
+.success-box{background:#fff;margin:12px;border-radius:12px;padding:30px 16px;text-align:center;box-shadow:0 1px 6px rgba(0,0,0,.04)}
+.success-box .ok-icon{width:72px;height:72px;border-radius:50%;background:#e9faf1;color:#2ec47b;font-size:38px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px}
+.success-box .s-tit{font-size:17px;font-weight:700;margin-bottom:6px}
+.success-box .s-sub{font-size:12px;color:#999;margin-bottom:20px}
+.success-box .s-actions{display:flex;flex-direction:column;gap:10px}
+/* 底部固定按钮 */
+.fixed-bottom{position:absolute;bottom:56px;left:0;right:0;max-width:430px;margin:0 auto;padding:10px 12px;background:#fff;border-top:1px solid #f0f0f0;z-index:25}
+.btn-row{display:flex;gap:10px}
+/* 配网动画 */
+.provision{background:#fff;margin:12px;border-radius:12px;padding:26px 16px;text-align:center;box-shadow:0 1px 6px rgba(0,0,0,.04)}
+.provision .pv-ring{width:90px;height:90px;margin:0 auto 16px;position:relative}
+.provision .pv-ring .spinner{width:90px;height:90px;border:4px solid #eef1f8;border-top-color:#5b7cfa;border-radius:50%;animation:spin 1s linear infinite}
+.provision .pv-ring .pv-icon{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:34px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.provision .pv-tit{font-size:15px;font-weight:600;margin-bottom:6px}
+.provision .pv-sub{font-size:12px;color:#999;line-height:1.6}
+
+/* ===== 数据修改页 ===== */
+.edit-data-card{background:#fff;border-radius:12px;padding:16px;margin:0 12px;box-shadow:0 1px 6px rgba(0,0,0,.04)}
+.edit-data-card .ed-row{display:flex;align-items:center;padding:10px 0;border-bottom:1px solid #f4f6fb;gap:12px}
+.edit-data-card .ed-row:last-child{border-bottom:none}
+.edit-data-card .ed-row .edk{width:88px;font-size:13px;color:#666;flex-shrink:0}
+.edit-data-card .ed-row .edv{flex:1;font-size:13px;color:#222;font-weight:500}
+.edit-data-card .ed-row .edv.dim{color:#999;font-weight:400}
+.edit-data-card .ed-row input{flex:1;border:1px solid #e0e4f0;border-radius:8px;padding:9px 10px;font-size:13px;outline:none}
+.edit-data-card .ed-row input:focus{border-color:#5b7cfa}
+.section-tit{font-size:13px;font-weight:600;color:#333;margin:16px 12px 10px;display:flex;align-items:center;gap:6px}
+.section-tit .sub{font-size:11px;color:#999;font-weight:400}
+.img-field{background:#fff;border-radius:12px;padding:16px;margin:0 12px;box-shadow:0 1px 6px rgba(0,0,0,.04)}
+.img-field .if-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #f4f6fb}
+.img-field .if-row:last-child{border-bottom:none}
+.img-field .ifk{width:88px;font-size:13px;color:#666;flex-shrink:0}
+.img-field .ifv{flex:1}
+.img-thumb{width:56px;height:56px;border:1px dashed #c9cfdd;border-radius:8px;background:#f7f9ff;display:flex;align-items:center;justify-content:center;color:#5b7cfa;font-size:22px;cursor:pointer}
+.img-thumb.has{background:#eef2ff;border-style:solid}
+.img-thumb img{width:100%;height:100%;object-fit:cover;border-radius:8px}
+.img-thumb .it-txt{font-size:10px;color:#999;display:flex;flex-direction:column;align-items:center;gap:2px}
+/* 影响确认弹层 */
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:85;align-items:center;justify-content:center;padding:24px}
+.modal.show{display:flex}
+.modal .m-box{background:#fff;border-radius:16px;width:100%;max-width:360px;padding:22px 18px;text-align:center;box-shadow:0 8px 30px rgba(0,0,0,.2)}
+.modal .m-icon{font-size:40px;margin-bottom:10px}
+.modal .m-tit{font-size:16px;font-weight:700;color:#222;margin-bottom:8px}
+.modal .m-body{font-size:13px;color:#666;line-height:1.7;margin-bottom:8px}
+.modal .m-body b{color:#e0574b;font-size:16px}
+.modal .m-hint{font-size:12px;color:#999;margin-bottom:18px}
+.modal .m-actions{display:flex;gap:10px}
+.modal .m-actions .btn{margin:0}
+/* 刷图进度弹层 */
+.progress-modal .m-box{max-width:380px;text-align:left}
+.pm-bar{height:8px;background:#eef1f8;border-radius:6px;overflow:hidden;margin:12px 0 8px}
+.pm-bar .pm-fill{height:100%;background:linear-gradient(90deg,#5b7cfa,#6a5bfa);border-radius:6px;transition:width .3s}
+.pm-info{display:flex;justify-content:space-between;font-size:12px;color:#666;margin-bottom:10px}
+.pm-dev{background:#f7f9ff;border-radius:10px;padding:12px;max-height:150px;overflow-y:auto}
+.pm-dev .pmd-row{display:flex;align-items:center;gap:8px;font-size:12px;padding:4px 0;color:#555}
+.pm-dev .pmd-ok{color:#2ec47b}
+.pm-dev .pmd-fail{color:#e0574b}
+.pm-dev .pmd-run{color:#5b7cfa}
+.pm-dev .pmd-wait{color:#999}
+/* 成功结果弹层 */
+.result-modal .m-box{max-width:380px;text-align:left}
+.result-list{background:#f7f9ff;border-radius:10px;padding:10px 12px;margin:10px 0;max-height:150px;overflow-y:auto}
+.result-list .rl-row{display:flex;align-items:center;justify-content:space-between;font-size:12px;padding:4px 0;color:#555}
+.result-list .rl-row .ok{color:#2ec47b;font-weight:600}
+.result-list .rl-row .fail{color:#e0574b;font-weight:600}
+.result-list .rl-row .retry{color:#5b7cfa;font-weight:600;cursor:pointer}
+.fail-banner{background:#fdeeee;color:#e0574b;border-radius:8px;padding:8px 10px;font-size:12px;margin:8px 0}
+/* 字段类型徽标 */
+.ftype{display:inline-block;font-size:10px;padding:1px 6px;border-radius:4px;margin-left:4px;vertical-align:middle;font-weight:500}
+.ftype-text{background:#eef2ff;color:#5b7cfa}
+.ftype-num{background:#fff3e6;color:#e6a23c}
+.ftype-barcode{background:#e8faf1;color:#1c9d5f}
+.ftype-qr{background:#f2ecff;color:#7a5bfa}
+/* 字段错误提示 */
+.ftip{font-size:10px;color:#999;flex-shrink:0}
+.ftip.err{color:#e0574b;font-weight:600}
+.ftip.ok{color:#2ec47b}
+.ed-row input.err{border-color:#e0574b;background:#fdeeee}
+/* Toast 提示 */
+.toast{position:fixed;left:50%;top:45%;transform:translate(-50%,-50%);background:rgba(0,0,0,.78);color:#fff;font-size:14px;padding:10px 18px;border-radius:10px;z-index:100;max-width:80vw;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.25);animation:toastIn .25s ease;pointer-events:none}
+.toast.show{animation:toastIn .25s ease,toastOut .25s ease 1.75s forwards}
+@keyframes toastIn{from{opacity:0;transform:translate(-50%,-50%) scale(.92)}to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+@keyframes toastOut{to{opacity:0;transform:translate(-50%,-50%) scale(.92)}}
+/* 固件扫描弹窗 */
+.fw-modal .m-box{text-align:center}
+.fw-scan{background:#eef2ff;border-radius:12px;height:150px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:#5b7cfa;position:relative;overflow:hidden;margin:12px 0}
+.fw-scan .fs-ic{font-size:40px}
+.fw-scan .fs-line{position:absolute;left:10%;right:10%;height:2px;background:#5b7cfa;animation:scan 1.5s infinite}
+.fw-scan .fs-txt{font-size:12px;color:#7a8599}
+.fw-result{background:#f7f9ff;border-radius:10px;padding:12px;margin:8px 0}
+.fw-result .fr-row{display:flex;justify-content:space-between;font-size:12px;color:#555;padding:3px 0}
+.fw-result .fr-row b{color:#222}
+.fw-badge{display:inline-block;font-size:12px;font-weight:700;padding:3px 12px;border-radius:12px;margin-top:8px}
+.fw-badge.ble{background:#e8faf1;color:#1c9d5f}
+.fw-badge.mix{background:#fff3e6;color:#e6a23c}
+.fw-tip{font-size:12px;color:#666;line-height:1.6;margin-top:8px}
+.fw-tip.warn{color:#e0574b;background:#fdeeee;padding:8px 10px;border-radius:8px}
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- 顶栏 -->
+  <div class="topbar">
+    <span class="title" id="topTitle">ESL 智能标签</span>
+    <span class="act" onclick="showScan()">📷 扫码</span>
+  </div>
+
+  <!-- 主内容 -->
+  <div class="main">
+    <!-- ===== 我的空间 ===== -->
+    <div class="page active" id="page-home">
+      <div class="store-bar">
+        <div class="store-switch" onclick="showSheet('storeSheet')">
+          <div class="logo">🏬</div>
+          <div><div class="s-name" id="storeName">XX 连锁 · 一号店</div><div class="s-meta" id="storeMeta">3 个网关 · 11 个 ESL · 5 个 LCD</div></div>
+          <div class="arrow">▾</div>
+        </div>
+      </div>
+      <div class="overview-bar">
+        <div class="ov-item" onclick="switchPage('tag')"><div class="ov-name">网关</div><div class="ov-nums"><span class="on">1 在线</span> · <span class="off">0 离线</span></div><div class="ov-go">查看 ›</div></div>
+        <div class="ov-item" onclick="switchPage('tag')"><div class="ov-name">ESL 标签</div><div class="ov-nums"><span class="on">10 在线</span> · <span class="warn">1 离线</span></div><div class="ov-go">查看 ›</div></div>
+        <div class="ov-item" onclick="switchPage('tag')"><div class="ov-name">LCD 屏</div><div class="ov-nums"><span class="on">4 在线</span> · <span class="off">1 离线</span></div><div class="ov-go">查看 ›</div></div>
+      </div>
+      <div class="todo-bar" onclick="switchPage('tag')">
+        <span class="tb-ic">🔔</span>
+        <span class="tb-txt">有 <b>1</b> 台 ESL 离线、<b>1</b> 台 LCD 待处理</span>
+        <span class="tb-go">去处理 ›</span>
+      </div>
+      <div class="quick">
+        <div class="hero-row">
+          <div class="hero-btn" onclick="showScan()">
+            <span class="hb-icon">📷</span>
+            <span class="hb-txt"><b>绑定标签</b><em>扫码绑定</em></span>
+            <span class="hb-go">›</span>
+          </div>
+          <div class="hero-btn" onclick="showScan()">
+            <span class="hb-icon">📺</span>
+            <span class="hb-txt"><b>LCD绑定</b><em>扫码绑定</em></span>
+            <span class="hb-go">›</span>
+          </div>
+        </div>
+        <div class="grp-tit">常用功能</div>
+        <div class="grid">
+          <div class="item" onclick="switchPage('editdata')"><div class="ic ic-orange">✏️</div><div class="nm"><b>数据修改</b></div></div>
+          <div class="item"><div class="ic ic-purple">🌐</div><div class="nm"><b>ESL设备配网</b></div></div>
+          <div class="item"><div class="ic ic-teal">🖥</div><div class="nm"><b>LCD配网</b></div></div>
+          <div class="item" onclick="switchPage('tagdetail')"><div class="ic ic-blue">🏷</div><div class="nm"><b>标签详情</b></div></div>
+        </div>
+        <div class="grp-tit grp-minor">更多工具</div>
+        <div class="grid grid-minor">
+          <div class="item" onclick="switchPage('addtype')"><div class="ic ic-mute">➕</div><div class="nm">添加设备</div></div>
+          <div class="item" onclick=""><div class="ic ic-mute">🔓</div><div class="nm">设备解绑</div></div>
+          <div class="item" onclick=""><div class="ic ic-mute">📡</div><div class="nm">NFC连接</div></div>
+          <div class="item" onclick=""><div class="ic ic-mute">💡</div><div class="nm">标签点灯</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== 标签 ===== -->
+    <div class="page" id="page-tag">
+      <div class="filter">
+        <span class="chip active" onclick="filterTag(this,'all')">全部 <em id="cntAll"></em></span>
+        <span class="chip" onclick="filterTag(this,'on')">在线 <em id="cntOn"></em></span>
+        <span class="chip" onclick="filterTag(this,'warn')">离线 <em id="cntOff"></em></span>
+      </div>
+      <div class="searchbar"><span class="sc">🔍</span><input placeholder="搜索设备名称 / MAC" oninput="searchTag(this.value)"><span class="sc" onclick="showScan()">📷</span></div>
+      <div class="tag-list" id="tagList"></div>
+    </div>
+
+    <!-- ===== 标签详情（单页） ===== -->
+    <div class="page" id="page-tagdetail">
+      <div class="detail-wrap">
+        <div class="screen-shot">
+          <div class="shot-box"><div class="refresh" onclick="refreshShot(this)">⟳</div><div class="qrcode"></div><div class="tline">¥ 19.90</div><div class="tline" style="font-size:8px;color:#666">货架 · 促销价</div></div>
+          <div class="shot-info"><div class="si-tit">屏幕实时预览</div><div class="si-meta">上次回传：<b>10:24</b><br>设备名：<b>ESL-1043</b><br>MAC：<b>8C:CE:4E:00:01:2A</b></div></div>
+        </div>
+        <div class="auto-update"><div><div class="au-txt">内容变更后自动刷新屏幕</div><div class="au-sub">开启后标签自动同步最新内容</div></div><div class="switch on" onclick="this.classList.toggle('on')"></div></div>
+      </div>
+      <div class="card-tit">设备状态</div>
+      <div class="detail-rows">
+        <div class="d-row"><span class="k">电池电量</span><span class="v" style="color:#2ec47b">87% ▉▉▉▉▉</span></div>
+        <div class="d-row"><span class="k">信号强度</span><span class="v"><span class="signal-bar"><i></i><i></i><i></i><i></i><i></i></span> 良好</span></div>
+        <div class="d-row"><span class="k">所属归属</span><span class="v">一号店 / 货架A</span></div>
+        <div class="d-row"><span class="k">剩余刷新次数</span><span class="v">12,480 次</span></div>
+      </div>
+      <div class="detail-actions">
+        <div class="da da-flash" onclick="switchPage('flash')">立即刷图</div>
+        <div class="da da-outline" onclick="showScan()">解绑设备</div>
+      </div>
+      <div class="card-tit">操作记录</div>
+      <div class="history">
+        <div class="h-row"><span class="h-dot ok"></span><div class="h-txt">屏幕刷新成功<div class="h-sub">今天 10:24 · 触发：手动</div></div><span class="h-st" style="color:#2ec47b">成功</span></div>
+        <div class="h-row"><span class="h-dot ok"></span><div class="h-txt">数据修改：促销价 19.90<div class="h-sub">今天 10:23 · 手动</div></div><span class="h-st" style="color:#2ec47b">成功</span></div>
+        <div class="h-row"><span class="h-dot fail"></span><div class="h-txt">屏幕刷新失败<div class="h-sub">昨天 18:02 · 信号弱</div></div><span class="h-st" style="color:#e0574b">失败</span></div>
+      </div>
+      <div class="mock-hint">标签详情：屏幕实时预览、刷新回传、电量/信号可视化</div>
+    </div>
+
+    <!-- ===== 添加设备：类型选择 ===== -->
+    <div class="page" id="page-addtype">
+      <div class="mock-hint">添加设备 · 请选择设备类型</div>
+      <div class="type-grid">
+        <div class="type-card" onclick="addESL()">
+          <div class="tc-icon ic-green">🏷</div>
+          <div class="tc-info"><div class="tc-name">ESL 电子标签</div><div class="tc-desc">价签 / 库位 / 桌牌，扫码或 NFC 快速绑定</div></div>
+          <div class="tc-go">›</div>
+        </div>
+        <div class="type-card" onclick="addLCD()">
+          <div class="tc-icon ic-indigo">🖥</div>
+          <div class="tc-info"><div class="tc-name">LCD 显示屏</div><div class="tc-desc">大屏展示，需配网后注册使用</div></div>
+          <div class="tc-go">›</div>
+        </div>
+        <div class="type-card" onclick="addWifi()">
+          <div class="tc-icon ic-cyan">📡</div>
+          <div class="tc-info"><div class="tc-name">ESL WiFi 设备</div><div class="tc-desc">无线设备 / 网关类，需配网后注册</div></div>
+          <div class="tc-go">›</div>
+        </div>
+      </div>
+      <div class="mock-hint">选择类型后进入对应的添加流程</div>
+    </div>
+
+    <!-- ===== 添加设备：ESL 扫码/NFC ===== -->
+    <div class="page" id="page-addesl">
+      <div class="add-step">
+        <div class="astep active"><div class="dot">1</div><div class="st">识别设备</div></div>
+        <div class="astep"><div class="dot">2</div><div class="st">命名归类</div></div>
+        <div class="astep"><div class="dot">3</div><div class="st">完成</div></div>
+      </div>
+      <div class="scan-box2">
+        <div class="cam">🏷</div>
+        <div class="scan-line2"></div>
+        <span style="font-size:13px;color:#7a8599">对准标签二维码扫码识别</span>
+        <span class="corner c1"></span><span class="corner c2"></span><span class="corner c3"></span><span class="corner c4"></span>
+      </div>
+      <div class="nfc-tip">
+        <div class="nf-ic">📶</div>
+        <div class="nf-txt">或将设备靠近手机 NFC 感应区</div>
+        <div class="nf-sub">自动识别设备 MAC，无需手动输入</div>
+        <div class="nf-wave"><i></i><i></i><i></i></div>
+      </div>
+      <div class="pwd-form">
+        <div class="pwd-row"><div class="pk">MAC 地址</div><input placeholder="扫码后自动填入，也可手动输入" value="8C:CE:4E:00:0A:55"></div>
+      </div>
+      <div class="fixed-bottom">
+        <div class="btn-row">
+          <button class="btn btn-ghost" onclick="showScan()">重新扫码</button>
+          <button class="btn btn-primary" onclick="switchPage('addform')">识别完成，下一步</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== 添加设备：LCD/ESL WiFi 配网（选WiFi+密码） ===== -->
+    <div class="page" id="page-addnetwork">
+      <div class="add-step">
+        <div class="astep active"><div class="dot">1</div><div class="st">连接网络</div></div>
+        <div class="astep"><div class="dot">2</div><div class="st">命名归类</div></div>
+        <div class="astep"><div class="dot">3</div><div class="st">完成</div></div>
+      </div>
+      <div class="card-tit">选择设备要连接的 WiFi</div>
+      <div class="wifi-list">
+        <div class="wifi-item" onclick="selWifi(this,'Store-WiFi-5G')"><span class="wf-icon">📶</span><div class="wf-info"><div class="wf-name">Store-WiFi-5G</div><div class="wf-meta">信号强 · 5G</div></div><span class="wf-lock">🔒</span></div>
+        <div class="wifi-item selected" onclick="selWifi(this,'Store-WiFi-2.4G')"><span class="wf-icon">📶</span><div class="wf-info"><div class="wf-name">Store-WiFi-2.4G</div><div class="wf-meta">信号强 · 2.4G（推荐）</div></div><span class="wf-lock">🔒</span></div>
+        <div class="wifi-item" onclick="selWifi(this,'Guest-Open')"><span class="wf-icon">📶</span><div class="wf-info"><div class="wf-name">Guest-Open</div><div class="wf-meta">开放网络</div></div></div>
+      </div>
+      <div class="pwd-form">
+        <div class="pwd-row"><div class="pk">WiFi 密码</div><input id="wifiPwd" type="password" placeholder="请输入 WiFi 密码"></div>
+      </div>
+      <div class="provision" id="provisionBox" style="display:none">
+        <div class="pv-ring"><div class="spinner"></div><div class="pv-icon">📡</div></div>
+        <div class="pv-tit">正在连接 WiFi…</div>
+        <div class="pv-sub">请保持设备开机，约需 10~30 秒</div>
+      </div>
+      <div class="fixed-bottom">
+        <div class="btn-row">
+          <button class="btn btn-primary" onclick="startProvision()">开始配网</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== 添加设备：命名归类 ===== -->
+    <div class="page" id="page-addform">
+      <div class="add-step">
+        <div class="astep done"><div class="dot">✓</div><div class="st">识别设备</div></div>
+        <div class="astep active"><div class="dot">2</div><div class="st">命名归类</div></div>
+        <div class="astep"><div class="dot">3</div><div class="st">完成</div></div>
+      </div>
+      <div class="card-tit">设备信息</div>
+      <div class="pwd-form">
+        <div class="pwd-row"><div class="pk">设备名称</div><input placeholder="如：货架A-01 价签" value="货架A-01 价签"></div>
+        <div class="pwd-row"><div class="pk">所属空间</div><input value="XX 连锁 · 一号店" readonly></div>
+        <div class="pwd-row"><div class="pk">所在位置</div><input placeholder="如：货架A / 会议室 / 仓库B" value="货架A"></div>
+      </div>
+      <div class="fixed-bottom">
+        <div class="btn-row">
+          <button class="btn btn-ghost" onclick="history.back()">上一步</button>
+          <button class="btn btn-primary" onclick="switchPage('addsuccess')">确认添加</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== 添加设备：完成 ===== -->
+    <div class="page" id="page-addsuccess">
+      <div class="success-box">
+        <div class="ok-icon">✓</div>
+        <div class="s-tit">设备添加成功</div>
+        <div class="s-sub">已添加到「XX 连锁 · 一号店 · 货架A」</div>
+        <div class="s-actions">
+          <button class="btn btn-primary" onclick="switchPage('addtype')">继续添加设备</button>
+          <button class="btn btn-ghost" onclick="switchPage('home')">返回首页</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== 数据修改页 ===== -->
+    <div class="page" id="page-editdata">
+      <div class="edit-data-card">
+        <div class="ed-row"><div class="edk">数据 ID</div><div class="edv">20250812001</div></div>
+        <div class="ed-row"><div class="edk">数据名称<span class="ftype ftype-text">纯文本</span></div><input id="fld_name" value="可乐 500ml 促销装" placeholder="可输入中英文/数字" data-type="text"></div>
+        <div class="ed-row"><div class="edk">价格<span class="ftype ftype-num">数字</span></div><input id="fld_price" value="19.90" inputmode="decimal" placeholder="只能输入数字" data-type="num"><span style="font-size:12px;color:#999">元</span></div>
+      </div>
+      <div class="section-tit">普通字段数据 <span class="sub">按类型校验</span></div>
+      <div class="edit-data-card">
+        <div class="ed-row"><div class="edk">名称<span class="ftype ftype-text">纯文本</span></div><input id="fld_pname" value="可乐 500ml 促销装" data-type="text"></div>
+        <div class="ed-row"><div class="edk">会员价<span class="ftype ftype-num">数字</span></div><input id="fld_member" value="18.50" inputmode="decimal" data-type="num"></div>
+        <div class="ed-row"><div class="edk">条码<span class="ftype ftype-barcode">EAN13</span></div><input id="fld_barcode" value="6901234567892" inputmode="numeric" maxlength="13" data-type="ean13" onblur="validateField(this)" oninput="onNumInput(this)"><span class="ftip" id="ftip_barcode"></span></div>
+        <div class="ed-row"><div class="edk">UPC 条码<span class="ftype ftype-barcode">UPC-A</span></div><input id="fld_upca" value="" inputmode="numeric" maxlength="12" data-type="upca" placeholder="12 位数字" onblur="validateField(this)" oninput="onNumInput(this)"><span class="ftip" id="ftip_upca"></span></div>
+        <div class="ed-row"><div class="edk">商品二维码<span class="ftype ftype-qr">QR</span></div><input id="fld_qrcode" value="https://example.com/p/001" data-type="qrcode" placeholder="任意文本或 URL"></div>
+        <div class="ed-row"><div class="edk">溯源码<span class="ftype ftype-qr">DM</span></div><input id="fld_dm" value="" data-type="datamatrix" placeholder="任意文本"></div>
+      </div>
+      <div class="section-tit">图片字段数据 <span class="sub">支持上传</span></div>
+      <div class="img-field">
+        <div class="if-row"><div class="ifk">主图</div><div class="ifv"><div class="img-thumb has">🖼</div></div></div>
+        <div class="if-row"><div class="ifk">图标</div><div class="ifv"><div class="img-thumb" onclick="this.innerHTML='🖼'"><span class="it-txt">📷<br>上传</span></div></div></div>
+      </div>
+      <div class="fixed-bottom">
+        <div class="btn-row">
+          <button class="btn btn-ghost" onclick="history.back()">取消</button>
+          <button class="btn btn-primary" onclick="validateAndSubmit()">修改</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 影响范围确认弹层 -->
+    <div class="modal" id="impactModal">
+      <div class="m-box">
+        <div class="m-icon">⚠️</div>
+        <div class="m-tit">确认修改并同步？</div>
+        <div class="m-body">此数据已绑定 <b>20</b> 台设备<br>修改后将自动同步刷图</div>
+        <div class="m-hint">预计耗时约 30 秒，期间请保持设备在线</div>
+        <div class="m-actions">
+          <button class="btn btn-ghost" onclick="closeModal('impactModal')">取消</button>
+          <button class="btn btn-primary" onclick="startEditFlash()">确认修改</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 保存+刷图进度弹层 -->
+    <div class="modal progress-modal" id="progressModal">
+      <div class="m-box">
+        <div class="m-tit" id="pmTitle">正在保存并刷图…</div>
+        <div class="pm-bar"><div class="pm-fill" id="pmFill" style="width:0%"></div></div>
+        <div class="pm-info"><span id="pmCount">0 / 20 台</span><span id="pmEta">预计 30 秒</span></div>
+        <div class="pm-dev" id="pmDevList"></div>
+      </div>
+    </div>
+
+    <!-- 成功结果弹层 -->
+    <div class="modal result-modal" id="resultModal">
+      <div class="m-box">
+        <div class="m-icon">✅</div>
+        <div class="m-tit">修改成功 · 刷图完成</div>
+        <div class="m-body" id="resultSummary" style="text-align:center">20 台设备已同步</div>
+        <div id="failBanner" class="fail-banner" style="display:none"></div>
+        <div class="result-list" id="resultList"></div>
+        <div class="m-actions" style="margin-top:14px">
+          <button class="btn btn-ghost" onclick="closeModal('resultModal');switchPage('flash')">查看刷图详情</button>
+          <button class="btn btn-primary" onclick="closeModal('resultModal')">返回</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== 刷图（3步） ===== -->
+    <div class="page" id="page-flash">
+      <div class="flash-step">
+        <div class="fstep active" data-step="1" onclick="flashStep(1)"><div class="dot">1</div><div class="st">编辑内容</div></div>
+        <div class="fstep" data-step="2" onclick="flashStep(2)"><div class="dot">2</div><div class="st">选择目标</div></div>
+        <div class="fstep" data-step="3" onclick="flashStep(3)"><div class="dot">3</div><div class="st">刷图</div></div>
+      </div>
+      <!-- 步骤1 编辑 -->
+      <div class="fpane active" id="fp1">
+        <div class="preview-panel">
+          <div class="pp-tit"><span>标签实时预览</span><span class="live">● 实时渲染</span></div>
+          <div class="pp-live">
+            <div class="tag-screen"><div class="ts-line"><span>¥</span><span>促销价</span></div><div class="ts-name" id="fpName">可乐 500ml 促销装</div><div class="ts-price" id="fpPrice">19.90</div><div class="ts-qr"></div></div>
+            <div class="pp-info"><div class="pp-stat">所见即所得</div><div class="pp-warn">内容修改后左侧预览同步更新，确认后再下发。</div></div>
+          </div>
+        </div>
+        <div class="card-tit">数据字段</div>
+        <div class="edit-form">
+          <div class="f-row"><div class="fk">名称<span class="en">name</span></div><div class="fv"><input id="fpInputName" value="可乐 500ml 促销装" oninput="renderFlashPreview()"></div></div>
+          <div class="f-row"><div class="fk">价格<span class="en">price</span></div><div class="fv"><input id="fpInputPrice" value="19.90" inputmode="decimal" oninput="renderFlashPreview()"></div></div>
+          <div class="f-row"><div class="fk">条码<span class="en">upca</span></div><div class="fv"><input value="6901234567892" maxlength="13"><span class="hint-chip">12~13 位</span></div></div>
+        </div>
+        <div class="mock-hint">步骤1：编辑模板内容，左侧实时预览墨水屏效果</div>
+      </div>
+      <!-- 步骤2 选目标 -->
+      <div class="fpane" id="fp2">
+        <div class="sel-all" onclick="toggleAll()">
+          <div><div class="sa-txt">全选当前门店标签</div><div class="sa-sub" id="selAllSub">已选 <b id="selCount">0</b> / 11 台</div></div>
+          <div class="check" id="selAllCheck" onclick="event.stopPropagation();toggleAll()"></div>
+        </div>
+        <div class="tag-list" id="targetList"></div>
+        <div class="mock-hint">步骤2：勾选要刷图的标签，支持批量</div>
+      </div>
+      <!-- 步骤3 进度 -->
+      <div class="fpane" id="fp3">
+        <div class="progress-panel">
+          <div class="overall">
+            <div class="big-ring" id="bigRing"></div>
+            <div class="info"><div class="tit" id="prTit">准备就绪</div><div class="meta">本次共 <b id="prTotal">0</b> 台，已成功 <b id="prOk">0</b> 台</div><div class="eta" id="prEta" style="display:none">预计剩余 8 秒</div></div>
+          </div>
+        </div>
+        <div class="target-card" style="background:#fff;margin:12px;border-radius:12px;padding:14px;box-shadow:0 1px 6px rgba(0,0,0,.04)">
+          <div class="card-tit" style="margin:0 0 10px">刷图进度</div>
+          <div class="tag-list" style="padding:0" id="progressList"></div>
+        </div>
+        <div class="mock-hint">步骤3：逐个设备实时进度、失败重试、屏幕回显</div>
+      </div>
+      <div class="cta">
+        <div class="row">
+          <button class="btn btn-primary" id="flashBtn" onclick="flashNext()">下一步</button>
+          <button class="btn btn-ghost" id="flashStartBtn" style="display:none" onclick="flashStart()">开始刷图</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== 模板库 ===== -->
+    <div class="page" id="page-tpl">
+      <div class="filter">
+        <span class="chip active" onclick="filterTpl(this,'all')">全部</span>
+        <span class="chip" onclick="filterTpl(this,'price')">价签</span>
+        <span class="chip" onclick="filterTpl(this,'shelf')">库位</span>
+        <span class="chip" onclick="filterTpl(this,'desk')">桌牌</span>
+      </div>
+      <div class="searchbar"><span class="sc">🔍</span><input placeholder="搜索模板名称"></div>
+      <div class="tpl-grid" id="tplGrid"></div>
+      <div class="mock-hint">模板库：价签/库位/桌牌模板，点击「使用」进入刷图</div>
+    </div>
+
+    <!-- ===== 我的 ===== -->
+    <div class="page" id="page-mine">
+      <div class="profile">
+        <div class="av">👤</div>
+        <div><div class="p-name">店长 001</div><div class="p-meta">heyitong12@gmail.com · XX 连锁一号店</div></div>
+      </div>
+      <div class="card-tit">消息与记录</div>
+      <div class="menu-list">
+        <div class="m-row" onclick="gotoMsg()"><span class="mi">🔔</span><span class="mt">消息中心</span><span class="badge-dot">3</span><span class="marrow">›</span></div>
+        <div class="m-row"><span class="mi">🕘</span><span class="mt">操作记录</span><span class="marrow">›</span></div>
+      </div>
+      <div class="card-tit">设备管理</div>
+      <div class="menu-list">
+        <div class="m-row"><span class="mi">🔁</span><span class="mt">网关管理</span><span class="msub">1 在线</span><span class="marrow">›</span></div>
+        <div class="m-row" onclick="showScan()"><span class="mi">📷</span><span class="mt">绑定标签</span><span class="marrow">›</span></div>
+        <div class="m-row"><span class="mi">🌐</span><span class="mt">WiFi 配网</span><span class="marrow">›</span></div>
+      </div>
+      <div class="card-tit">设置</div>
+      <div class="menu-list">
+        <div class="m-row"><span class="mi">⚙️</span><span class="mt">功能设置</span><span class="marrow">›</span></div>
+        <div class="m-row"><span class="mi">ℹ️</span><span class="mt">关于与版本</span><span class="msub">v2.1.0</span><span class="marrow">›</span></div>
+      </div>
+    </div>
+
+    <!-- ===== 消息中心 ===== -->
+    <div class="page" id="page-msg">
+      <div class="mock-hint">消息中心 · 刷图结果与设备告警</div>
+      <div class="history">
+        <div class="h-row"><span class="h-dot ok"></span><div class="h-txt">批量刷图完成<div class="h-sub">货架价签 3 台 · 今天 10:24</div></div><span class="h-st" style="color:#2ec47b">成功</span></div>
+        <div class="h-row"><span class="h-dot fail"></span><div class="h-txt">标签离线告警<div class="h-sub">仓库A-02 · 昨天 18:02</div></div><span class="h-st" style="color:#e0574b">离线</span></div>
+        <div class="h-row"><span class="h-dot ok"></span><div class="h-txt">数据同步成功<div class="h-sub">促销价 19.90 · 昨天 16:05</div></div><span class="h-st" style="color:#2ec47b">成功</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 底部导航 -->
+  <div class="tabbar">
+    <div class="tab active" data-tab="home" onclick="switchPage('home')"><span class="ti">🏠</span>我的空间</div>
+    <div class="tab" data-tab="mine" onclick="switchPage('mine')"><span class="ti">👤</span>个人中心</div>
+  </div>
+
+  <!-- 门店切换 -->
+  <div class="overlay" id="storeSheet" onclick="if(event.target===this)hideSheet('storeSheet')">
+    <div class="sheet">
+      <div class="sh-tit">切换门店 <span class="close" onclick="hideSheet('storeSheet')">×</span></div>
+      <div class="store-item" onclick="pickStore(this)"><div class="lg">🏬</div><div><div class="sn">XX 连锁 · 一号店</div><div class="sd">3 网关 · 11 标签</div></div><div class="ok2">✓</div></div>
+      <div class="store-item" onclick="pickStore(this)"><div class="lg">🏬</div><div><div class="sn">XX 连锁 · 二号店</div><div class="sd">2 网关 · 8 标签</div></div></div>
+      <div class="store-item" onclick="pickStore(this)"><div class="lg">🏭</div><div><div class="sn">仓库中心</div><div class="sd">5 网关 · 24 标签</div></div></div>
+    </div>
+  </div>
+
+  <!-- 扫码 -->
+  <div class="overlay" id="scanSheet" onclick="if(event.target===this)hideSheet('scanSheet')">
+    <div class="sheet">
+      <div class="sh-tit">扫描标签 / 二维码 <span class="close" onclick="hideSheet('scanSheet')">×</span></div>
+      <div class="scan-box"><div class="cam">📷</div><div class="scan-line"></div><span style="font-size:13px;color:#7a8599">对准标签或二维码</span><span class="corner c1"></span><span class="corner c2"></span><span class="corner c3"></span><span class="corner c4"></span></div>
+      <div style="text-align:center;font-size:13px;color:#666;margin-top:14px">或</div>
+      <div class="edit-form" style="margin:12px 0 0">
+        <div class="f-row"><div class="fk">MAC 地址</div><div class="fv"><input placeholder="输入标签 MAC，如 8C:CE:4E:..." onkeydown="if(event.key==='Enter')scanDone()"></div></div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:14px"><button class="btn btn-primary" onclick="scanDone()">确认</button><button class="btn btn-ghost" onclick="hideSheet('scanSheet')">取消</button></div>
+    </div>
+  </div>
+
+  <!-- 固件扫描弹窗（离线设备扫码判断） -->
+  <div class="modal fw-modal" id="fwModal">
+    <div class="m-box">
+      <div class="m-tit" id="fwTitle">扫描设备判断固件</div>
+      <div class="fw-scan" id="fwScanBox">
+        <div class="fs-ic">📷</div>
+        <div class="fs-line"></div>
+        <div class="fs-txt">对准设备二维码识别固件版本</div>
+      </div>
+      <div class="fw-result" id="fwResult" style="display:none">
+        <div class="fr-row"><span>设备 MAC</span><b id="fwMac"></b></div>
+        <div class="fr-row"><span>固件版本</span><b id="fwVer"></b></div>
+        <div style="text-align:center"><span class="fw-badge" id="fwBadge"></span></div>
+      </div>
+      <div class="fw-tip" id="fwTip"></div>
+      <div class="m-actions" style="margin-top:14px" id="fwActions"></div>
+    </div>
+  </div>
+</div>
+
+<!-- PRD 开关按钮 -->
+<button class="prd-toggle" id="prdToggle" onclick="togglePrd()">📄 查看 PRD</button>
+
+<!-- PRD 侧栏 -->
+<div class="prd-panel" id="prdPanel">
+  <div class="prd-head">
+    <span class="ph-tit">📄 ESL 智能标签 APP · PRD</span>
+    <span class="ph-close" onclick="togglePrd()">×</span>
+  </div>
+  <div class="prd-body">
+    <div class="toc">
+      <b>目录</b>
+      <a href="#prd-s1">1. 产品概述</a>
+      <a href="#prd-s2">2. 首页（我的空间）需求</a>
+      <a href="#prd-s3">3. 交互与跳转</a>
+      <a href="#prd-s4">4. 数据与状态</a>
+      <a href="#prd-s5">5. 待确认事项</a>
+      <a href="#prd-e1">══ 数据修改页 PRD ══</a>
+      <a href="#prd-e1">· 页面字段与交互</a>
+      <a href="#prd-e2">· 弹窗1：影响确认</a>
+      <a href="#prd-e3">· 弹窗2：刷图进度</a>
+      <a href="#prd-e4">· 弹窗3：成功结果</a>
+    </div>
+
+    <h2 id="prd-s1">1. 产品概述</h2>
+    <p><b>产品定位</b>：面向门店 / 仓库 / 会议室等多场景，对电子墨水屏（ESL）标签与 LCD 显示屏进行绑定、配网、刷图、状态管理的移动端工具。</p>
+    <p><b>核心价值</b>：让商户管理员随时随地完成设备接入与内容下发。</p>
+    <p><b>技术形态</b>：H5（Web 移动端），手机浏览器打开即用，支持多空间切换。</p>
+
+    <h2 id="prd-s2">2. 首页（我的空间）需求</h2>
+    <h3>2.1 顶栏</h3>
+    <p>展示品牌标识（弱化）+「扫码」快捷按钮。</p>
+    <table>
+      <tr><th>元素</th><th>说明</th></tr>
+      <tr><td>左标题</td><td>「ESL 智能标签」，弱化半透明，仅品牌标识</td></tr>
+      <tr><td>右按钮</td><td>「📷 扫码」，胶囊样式，点击弹出扫码弹窗</td></tr>
+    </table>
+
+    <h3>2.2 空间栏</h3>
+    <p>当前所在空间的核心信息，点击可切换空间。</p>
+    <table>
+      <tr><th>字段</th><th>说明</th></tr>
+      <tr><td>空间名</td><td>如「XX 连锁 · 一号店」，大标题突出</td></tr>
+      <tr><td>副信息</td><td>「3 个网关 · 11 个 ESL · 5 个 LCD」</td></tr>
+      <tr><td>交互</td><td>点击 → 底部弹出空间切换弹层</td></tr>
+    </table>
+
+    <h3>2.3 设备概览</h3>
+    <p>当前空间设备状态一览，点击进入对应设备列表。</p>
+    <table>
+      <tr><th>列</th><th>内容</th><th>状态色</th></tr>
+      <tr><td>网关</td><td>在线数 · 离线数</td><td>在线绿 / 离线灰 / 告警橙</td></tr>
+      <tr><td>ESL 标签</td><td>在线数 · 离线数</td><td>同上</td></tr>
+      <tr><td>LCD 屏</td><td>在线数 · 离线数</td><td>同上</td></tr>
+    </table>
+    <p><b>交互</b>：每列可点击 → 跳转对应设备列表。</p>
+
+    <h3>2.4 待办提示条</h3>
+    <p>「有 X 台 ESL 离线、Y 台 LCD 待处理」→ 去处理。</p>
+    <p><b>显隐</b>：有异常时显示，全部正常时隐藏整条。</p>
+
+    <h3>2.5 金刚区</h3>
+    <p><b>主按钮区（2 个同级）</b>：绑定标签、LCD绑定。</p>
+    <p><b>常用功能（4 个）</b>：数据修改、ESL设备配网、LCD配网、标签详情。</p>
+    <p><b>更多工具（3 个弱化）</b>：设备解绑、NFC连接、标签点灯。</p>
+
+    <h2 id="prd-s3">3. 交互与跳转</h2>
+    <table>
+      <tr><th>来源</th><th>目标</th></tr>
+      <tr><td>顶栏扫码 / 绑定标签 / LCD绑定</td><td>扫码弹窗</td></tr>
+      <tr><td>空间栏</td><td>空间切换弹层</td></tr>
+      <tr><td>设备概览各列</td><td>对应设备列表</td></tr>
+      <tr><td>待办提示条</td><td>待处理列表</td></tr>
+      <tr><td>数据修改</td><td>刷图/编辑页</td></tr>
+      <tr><td>ESL/LCD 配网</td><td>配网页</td></tr>
+      <tr><td>标签详情</td><td>标签详情页</td></tr>
+    </table>
+
+    <h2 id="prd-s4">4. 数据与状态</h2>
+    <h3>4.1 数据来源</h3>
+    <p>空间信息、设备在线/离线统计、待办数量均由后端接口实时返回。</p>
+    <h3>4.2 状态色规范</h3>
+    <table>
+      <tr><th>状态</th><th>颜色</th></tr>
+      <tr><td>主色</td><td>#5b7cfa → #6a5bfa</td></tr>
+      <tr><td>在线/成功</td><td>#2ec47b</td></tr>
+      <tr><td>告警/离线</td><td>#e6a23c</td></tr>
+      <tr><td>异常强调</td><td>#e0574b</td></tr>
+      <tr><td>弱化</td><td>灰 #9aa3b5</td></tr>
+    </table>
+
+    <h2 id="prd-s5">5. 待确认事项</h2>
+    <ul>
+      <li>绑定标签 / LCD绑定 扫码流程是否共用弹窗。</li>
+      <li>设备概览三列跳同一列表（按类型过滤）还是三个独立列表。</li>
+      <li>待办判定的离线阈值需后端定义。</li>
+      <li>更多工具（解绑/NFC/点灯）流程待补充。</li>
+      <li>空间切换后数据刷新时机与接口。</li>
+    </ul>
+
+    <h2 id="prd-e1">数据修改页 PRD · 页面字段与交互</h2>
+    <h3>页面结构</h3>
+    <p>顶栏「数据修改」→ 基本信息卡 → 普通字段数据 → 图片字段数据 → 底部操作条（取消/修改）。</p>
+    <h3>字段定义</h3>
+    <table>
+      <tr><th>分组</th><th>字段</th><th>可编辑</th><th>校验</th></tr>
+      <tr><td>基本信息</td><td>数据 ID</td><td>否（只读）</td><td>系统生成</td></tr>
+      <tr><td>基本信息</td><td>数据名称</td><td>是</td><td>必填</td></tr>
+      <tr><td>基本信息</td><td>价格</td><td>是</td><td>必填，单位元</td></tr>
+      <tr><td>普通字段</td><td>名称 / 会员价 / 条码</td><td>是</td><td>条码 12~13 位</td></tr>
+      <tr><td>图片字段</td><td>主图 / 图标</td><td>是</td><td>点击上传</td></tr>
+    </table>
+    <h3>交互</h3>
+    <p>输入框聚焦高亮主色；图片未上传显示虚线占位；「取消」返回不保存；「修改」触发影响确认弹窗。</p>
+
+    <h2 id="prd-e2">弹窗1：影响范围确认</h2>
+    <p>点击「修改」且校验通过后弹出。</p>
+    <p>「⚠️ 确认修改并同步？此数据已绑定 <b>20</b> 台设备，修改后将自动同步刷图，预计约 30 秒」</p>
+    <table>
+      <tr><th>按钮</th><th>行为</th></tr>
+      <tr><td>取消</td><td>关闭弹窗，不保存不刷图</td></tr>
+      <tr><td>确认修改</td><td>打开展刷图进度弹窗</td></tr>
+    </table>
+    <p><b>边界</b>：无绑定设备不弹此窗直接成功；全离线时追加离线警告。</p>
+
+    <h2 id="prd-e3">弹窗2：保存+刷图进度</h2>
+    <p>确认后弹出，加载中不可关闭。</p>
+    <p>标题「正在保存并刷图…」+ 进度条 + 计数（X/20 台）+ 剩余时间 + 设备列表。</p>
+    <table>
+      <tr><th>设备状态</th><th>文案</th><th>颜色</th></tr>
+      <tr><td>待刷图</td><td>待刷图</td><td>灰</td></tr>
+      <tr><td>刷图中</td><td>刷图中</td><td>主色蓝</td></tr>
+      <tr><td>成功</td><td>✓ 成功</td><td>绿</td></tr>
+      <tr><td>失败</td><td>✕ 失败</td><td>红</td></tr>
+    </table>
+    <p>全部完成 → 自动进入成功结果弹窗。</p>
+
+    <h2 id="prd-e4">弹窗3：成功结果</h2>
+    <p>进度全部完成弹出。</p>
+    <p><b>全部成功</b>：「✅ 修改成功 · 刷图完成，20 台设备已同步」→ [查看刷图详情] [返回]。</p>
+    <p><b>部分失败</b>：「18 台成功 · 2 台失败」+ 失败横幅「可点击重试」+ 失败设备行 [重试]。</p>
+    <table>
+      <tr><th>元素</th><th>行为</th></tr>
+      <tr><td>失败行·重试</td><td>点击后该设备变「✓ 已同步」；仍失败提示检查设备</td></tr>
+      <tr><td>查看刷图详情</td><td>跳转刷图进度页看明细</td></tr>
+      <tr><td>返回</td><td>关闭弹窗回上一页</td></tr>
+    </table>
+    <p><b>全失败</b>：「修改已保存，但 X 台均失败，请检查设备后重试」。</p>
+  </div>
+</div>
+
+<script>
+/* ===== 全局页面切换 ===== */
+const pages={home:'我的空间',tag:'标签',tagdetail:'标签详情',flash:'刷图',tpl:'模板库',mine:'个人中心',msg:'消息中心',
+  addtype:'添加设备',addesl:'添加 ESL',addnetwork:'设备配网',addform:'命名归类',addsuccess:'添加完成',
+  editdata:'数据修改'};
+function switchPage(p){
+  document.querySelectorAll('.page').forEach(x=>x.classList.toggle('active',x.id==='page-'+p));
+  document.querySelectorAll('.tabbar .tab').forEach(t=>t.classList.toggle('active',t.dataset.tab===p));
+  document.getElementById('topTitle').textContent=pages[p]||'电子标签刷图';
+  document.querySelector('.main').scrollTop=0;
+}
+function showSheet(id){document.getElementById(id).classList.add('show');}
+function hideSheet(id){document.getElementById(id).classList.remove('show');}
+function showScan(){showSheet('scanSheet');}
+function scanDone(){hideSheet('scanSheet');switchPage('tag');}
+/* ===== 设备添加功能 ===== */
+function addESL(){switchPage('addesl');}
+function addLCD(){switchPage('addnetwork');}
+function addWifi(){switchPage('addnetwork');}
+let selectedWifi='Store-WiFi-2.4G';
+function selWifi(el,name){
+  document.querySelectorAll('.wifi-item').forEach(x=>x.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedWifi=name;
+}
+function startProvision(){
+  const box=document.getElementById('provisionBox');
+  const btn=event.target;
+  btn.disabled=true;
+  box.style.display='block';
+  setTimeout(()=>{
+    btn.disabled=false;
+    switchPage('addform');
+  },2500);
+}
+/* ===== 数据修改 + 刷图同步 ===== */
+const totalDevices=20;
+let editFlashTimer=null, editFail=0;
+function showModal(id){document.getElementById(id).classList.add('show');}
+function closeModal(id){document.getElementById(id).classList.remove('show');}
+function showImpact(){showModal('impactModal');}
+function startEditFlash(){
+  closeModal('impactModal');
+  showModal('progressModal');
+  document.getElementById('pmTitle').textContent='正在保存并刷图…';
+  document.getElementById('pmFill').style.width='0%';
+  document.getElementById('pmCount').textContent='0 / '+totalDevices+' 台';
+  document.getElementById('pmEta').textContent='预计 30 秒';
+  // 预填设备列表（前18成功，2台失败）
+  const devList=[];
+  for(let i=1;i<=totalDevices;i++){
+    devList.push({name:'货架B-0'+String(i).padStart(2,'0'),mac:'8C:CE:4E:00:0A:'+String(i+10).padStart(2,'16'),status:'wait'});
+  }
+  devList[7].status='fail';
+  devList[15].status='fail';
+  renderEditDev(devList);
+  // 进度模拟
+  let done=0;
+  clearInterval(editFlashTimer);
+  editFlashTimer=setInterval(()=>{
+    done++;
+    devList.forEach((d,i)=>{ if(i<done && d.status==='wait') d.status='run'; });
+    const pct=Math.min(100,Math.round(done/totalDevices*100));
+    document.getElementById('pmFill').style.width=pct+'%';
+    document.getElementById('pmCount').textContent=done+' / '+totalDevices+' 台';
+    renderEditDev(devList);
+    if(done>=totalDevices){
+      clearInterval(editFlashTimer);
+      finishEdit(devList);
+    }
+  },150);
+}
+function renderEditDev(list){
+  document.getElementById('pmDevList').innerHTML=list.map((d,i)=>{
+    let cls='pmd-wait',txt='待刷图';
+    if(d.status==='run'){cls='pmd-run';txt='刷图中';}
+    if(d.status==='done'){cls='pmd-ok';txt='✓ 成功';}
+    if(d.status==='fail'){cls='pmd-fail';txt='✕ 失败';}
+    return `<div class="pmd-row"><span>${d.name}</span><span>${d.mac}</span><span class="${cls}">${txt}</span></div>`;
+  }).join('');
+}
+function finishEdit(list){
+  closeModal('progressModal');
+  list.forEach(d=>{ if(d.status==='run') d.status='done'; });
+  editFail=list.filter(d=>d.status==='fail').length;
+  document.getElementById('resultSummary').textContent=(totalDevices-editFail)+' 台成功 · '+editFail+' 台失败';
+  const failBanner=document.getElementById('failBanner');
+  failBanner.style.display=editFail>0?'block':'none';
+  failBanner.innerHTML='有 '+editFail+' 台设备刷图失败，可点击「重试」重新下发';
+  document.getElementById('resultList').innerHTML=list.map((d,i)=>{
+    const ok=d.status==='done';
+    return `<div class="rl-row"><span>${d.name}</span>${ok?'<span class="ok">✓ 已同步</span>':`<span class="fail">✕ 失败 <span class="retry" onclick="retryEdit(${i})">重试</span></span>`}</div>`;
+  }).join('');
+  showModal('resultModal');
+}
+function retryEdit(i){
+  const rows=document.querySelectorAll('#resultList .rl-row');
+  rows[i].querySelector('span').innerHTML='<span class="ok">✓ 已同步</span>';
+  // 模拟重试成功
+}
+/* ===== Toast 提示 ===== */
+function showToast(msg,duration){
+  const t=document.createElement('div');
+  t.className='toast show';
+  t.textContent=msg;
+  document.body.appendChild(t);
+  setTimeout(()=>t.remove(),duration||2000);
+}
+/* ===== 离线设备固件扫描 ===== */
+let fwTimer=null;
+function openFwScan(mac){
+  const m=document.getElementById('fwModal');
+  if(!m) return;
+  document.getElementById('fwTitle').textContent='扫描设备判断固件';
+  document.getElementById('fwScanBox').style.display='';
+  document.getElementById('fwResult').style.display='none';
+  document.getElementById('fwTip').className='fw-tip';
+  document.getElementById('fwTip').textContent='';
+  document.getElementById('fwActions').innerHTML='';
+  m.classList.add('show');
+  clearTimeout(fwTimer);
+  fwTimer=setTimeout(()=>{
+    const fw=Math.random()>0.4?'BLE':'MIX';
+    showFwResult(mac,fw);
+  },1500);
+}
+function showFwResult(mac,fw){
+  document.getElementById('fwScanBox').style.display='none';
+  document.getElementById('fwResult').style.display='';
+  document.getElementById('fwMac').textContent=mac;
+  document.getElementById('fwVer').textContent=fw+' 固件';
+  const badge=document.getElementById('fwBadge');
+  const tip=document.getElementById('fwTip');
+  const act=document.getElementById('fwActions');
+  if(fw==='BLE'){
+    badge.className='fw-badge ble';badge.textContent='BLE 固件';
+    tip.className='fw-tip';
+    tip.innerHTML='该设备支持<b>手机蓝牙刷图</b>，可离线直接刷图';
+    act.innerHTML='<button class="btn btn-primary" onclick="closeModal(\'fwModal\');switchPage(\'flash\')">进入蓝牙刷图</button>';
+  }else{
+    badge.className='fw-badge mix';badge.textContent='MIX 固件';
+    tip.className='fw-tip warn';
+    tip.innerHTML='该设备为 <b>MIX 固件</b>，<b>不支持手机蓝牙刷图</b>，<br>必须使用 <b>网关</b> 进行刷图';
+    act.innerHTML='<button class="btn btn-ghost" onclick="closeModal(\'fwModal\')">知道了</button>';
+  }
+}
+/* ===== PRD 侧栏开关 ===== */
+function togglePrd(){
+  const panel=document.getElementById('prdPanel');
+  const btn=document.getElementById('prdToggle');
+  const show=!panel.classList.contains('show');
+  panel.classList.toggle('show');
+  document.body.classList.toggle('prd-open',show);
+  btn.classList.toggle('on',show);
+  btn.textContent=show?'✕ 收起 PRD':'📄 查看 PRD';
+}
+function pickStore(el){
+  document.getElementById('storeName').textContent=el.querySelector('.sn').textContent;
+  document.getElementById('storeMeta').textContent=el.querySelector('.sd').textContent;
+  el.querySelectorAll('.ok2').forEach(x=>x.textContent='');
+  let t=el.querySelector('.ok2');if(!t){t=document.createElement('span');t.className='ok2';el.appendChild(t);}t.textContent='✓';
+  hideSheet('storeSheet');
+}
+
+/* ===== 标签数据 ===== */
+const tags=[
+  {name:'门口货架 · 价签',mac:'8C:CE:4E:00:01:2A',status:'on',type:'价签',bat:87,sig:5,pos:'货架A'},
+  {name:'仓库A-02 库位牌',mac:'8C:CE:4E:00:03:5F',status:'warn',type:'库位',bat:18,sig:3,pos:'仓库A'},
+  {name:'办公区 桌牌',mac:'8C:CE:4E:00:07:9C',status:'on',type:'桌牌',bat:92,sig:4,pos:'办公区'},
+  {name:'货架B-01 价签',mac:'8C:CE:4E:00:0A:11',status:'on',type:'价签',bat:76,sig:5,pos:'货架B'},
+  {name:'货架B-03 价签',mac:'8C:CE:4E:00:0A:19',status:'on',type:'价签',bat:64,sig:4,pos:'货架B'},
+  {name:'仓库B 库位牌',mac:'8C:CE:4E:00:0B:2C',status:'off',type:'库位',bat:0,sig:0,pos:'仓库B'},
+  {name:'会议室 桌牌',mac:'8C:CE:4E:00:0C:33',status:'on',type:'桌牌',bat:81,sig:4,pos:'会议室'},
+  {name:'促销区 价签',mac:'8C:CE:4E:00:0D:45',status:'on',type:'价签',bat:55,sig:5,pos:'促销区'},
+  {name:'收货区 库位牌',mac:'8C:CE:4E:00:0E:58',status:'on',type:'库位',bat:90,sig:4,pos:'收货区'},
+  {name:'前台 桌牌',mac:'8C:CE:4E:00:0F:6A',status:'on',type:'桌牌',bat:73,sig:3,pos:'前台'},
+  {name:'货架C-02 价签',mac:'8C:CE:4E:00:10:7B',status:'on',type:'价签',bat:68,sig:4,pos:'货架C'}
+];
+const stName={on:'在线',warn:'离线',off:'离线'};
+const stCls={on:'tg-on',warn:'tg-off',off:'tg-off'};
+const stDot={on:'st-dot-on',warn:'st-dot-off',off:'st-dot-off'};
+function sigBars(n){
+  let s='';
+  for(let i=1;i<=5;i++){ s+=`<i class="${i<=n?'':''}" style="${i<=n?'':'opacity:.25;background:#c9cfdd'}"></i>`; }
+  return `<span class="sig-bars">${s}</span>`;
+}
+function tagItemHTML(t){
+  // 在线设备：右侧箭头，点击整行进详情
+  // 离线设备：右侧「📱 扫描刷图」按钮，点击弹扫描框判断固件
+  const right = t.status==='on'
+    ? `<span class="tg-arrow">›</span>`
+    : `<button class="tg-btn" onclick="event.stopPropagation();openFwScan('${t.mac}')">📱 扫描刷图</button>`;
+  return `<div class="tag-item ${t.status==='on'?'':'is-offline'}" onclick="gotoDetail()">
+    <div class="tg-shot"><div class="qrcode"></div></div>
+    <div class="tg-info">
+      <div class="tg-name">${t.name}<span class="tg-status ${stCls[t.status]}"><i class="tdot ${stDot[t.status]}"></i>${stName[t.status]}</span></div>
+      <div class="tg-mac">${t.mac} · ${t.type}</div>
+      <div class="tg-meta">
+        <span class="tg-meta-item">🔋 ${t.bat}%</span>
+        <span class="tg-meta-item">📶 ${sigBars(t.sig)}</span>
+        <span class="tg-meta-item">📍 ${t.pos}</span>
+      </div>
+    </div>
+    ${right}
+  </div>`;
+}
+function renderTags(){
+  // 更新筛选数量
+  document.getElementById('cntAll').textContent=tags.length;
+  document.getElementById('cntOn').textContent=tags.filter(t=>t.status==='on').length;
+  document.getElementById('cntOff').textContent=tags.filter(t=>t.status!=='on').length;
+  document.getElementById('tagList').innerHTML=tags.map(tagItemHTML).join('');
+}
+function filterTag(el,type){
+  el.parentNode.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));el.classList.add('active');
+  window.__tagFilter=type;
+  const list=type==='all'?tags:tags.filter(t=>t.status===type);
+  document.getElementById('tagList').innerHTML=list.length?list.map(tagItemHTML).join(''):'<div class="empty" style="padding:40px 0"><div class="e-ic">📭</div>暂无设备</div>';
+}
+function searchTag(kw){
+  kw=kw.trim().toLowerCase();
+  const type=window.__tagFilter||'all';
+  let list=type==='all'?tags:tags.filter(t=>t.status===type);
+  if(kw){ list=list.filter(t=>t.name.toLowerCase().includes(kw)||t.mac.toLowerCase().includes(kw)); }
+  document.getElementById('tagList').innerHTML=list.length?list.map(tagItemHTML).join(''):'<div class="empty" style="padding:40px 0"><div class="e-ic">🔍</div>未找到相关设备</div>';
+}
+function gotoDetail(){switchPage('tagdetail');}
+function refreshShot(el){el.style.transition='transform .5s';el.style.transform='rotate(360deg)';setTimeout(()=>{el.style.transform='rotate(0)';el.textContent='✓';setTimeout(()=>el.textContent='⟳',800);},500);}
+
+/* ===== 模板 ===== */
+const templates=[
+  {name:'促销价签',type:'价签',cat:'price',price:'¥19.90',use:320},
+  {name:'标准价签',type:'价签',cat:'price',price:'¥25.00',use:540},
+  {name:'货架库位牌',type:'库位',cat:'shelf',price:'A-02',use:210},
+  {name:'办公桌牌',type:'桌牌',cat:'desk',price:'张三',use:96},
+  {name:'会员价签',type:'价签',cat:'price',price:'¥18.50',use:188},
+  {name:'收货区库位',type:'库位',cat:'shelf',price:'B-01',use:75},
+  {name:'会议桌牌',type:'桌牌',cat:'desk',price:'会议室3',use:42},
+  {name:'大促价签',type:'价签',cat:'price',price:'¥9.90',use:260}
+];
+function tplHTML(t){
+  return `<div class="tpl-card" onclick="switchPage('flash')">
+    <div class="th"><span class="ttype">${t.type}</span><span class="tfav">🤍</span><span class="tname">${t.name}</span><span class="tprice">${t.price}</span><div class="tqr"></div></div>
+    <div class="tn">${t.name}</div>
+    <div class="ts"><span>${t.use} 次使用</span><span class="use">使用 ›</span></div>
+  </div>`;
+}
+function renderTpl(){document.getElementById('tplGrid').innerHTML=templates.map(tplHTML).join('');}
+function filterTpl(el,cat){
+  el.parentNode.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));el.classList.add('active');
+  const list=cat==='all'?templates:templates.filter(t=>t.cat===cat);
+  document.getElementById('tplGrid').innerHTML=list.length?list.map(tplHTML).join(''):'<div class="empty" style="padding:40px 0"><div class="e-ic">🗂</div>暂无模板</div>';
+}
+
+/* ===== 刷图流程 ===== */
+let flashCur=1, selTargets=new Set(), prRunning=false, prDone=0;
+function flashStep(n){
+  flashCur=n;
+  document.querySelectorAll('.fstep').forEach(s=>{s.classList.toggle('active',+s.dataset.step===n);s.classList.toggle('done',+s.dataset.step<n);});
+  document.querySelectorAll('.fpane').forEach(p=>p.classList.toggle('active',p.id==='fp'+n));
+  document.getElementById('flashBtn').style.display=(n===3)?'none':'block';
+  document.getElementById('flashStartBtn').style.display=(n===3)?'block':'none';
+}
+function renderTargets(){
+  document.getElementById('targetList').innerHTML=tags.map(t=>
+    `<div class="tag-item" onclick="toggleTarget('${t.mac}')">
+      <div class="tg-shot"><div class="qrcode"></div></div>
+      <div class="tg-info"><div class="tg-name">${t.name}</div><div class="tg-sub">${t.mac}</div></div>
+      <div class="check ${selTargets.has(t.mac)?'on':''}" id="chk-${t.mac}">${selTargets.has(t.mac)?'✓':''}</div>
+    </div>`).join('');
+  document.getElementById('selCount').textContent=selTargets.size;
+}
+function toggleTarget(mac){
+  if(selTargets.has(mac))selTargets.delete(mac);else selTargets.add(mac);
+  renderTargets();
+}
+function toggleAll(){
+  if(selTargets.size===tags.length)selTargets.clear();else tags.forEach(t=>selTargets.add(t.mac));
+  renderTargets();
+}
+function flashNext(){
+  if(flashCur<3)flashStep(flashCur+1);
+  if(flashCur===2&&selTargets.size===0){alert('请先选择要刷图的标签');return;}
+  if(flashCur===2)renderTargets();
+}
+function renderFlashPreview(){
+  document.getElementById('fpName').textContent=document.getElementById('fpInputName').value||'未命名';
+  document.getElementById('fpPrice').textContent=document.getElementById('fpInputPrice').value||'0.00';
+}
+function initBigRing(){
+  const box=document.getElementById('bigRing');
+  box.innerHTML=`<svg class="progress-ring" width="76" height="76" style="transform:rotate(-90deg)">
+    <circle cx="38" cy="38" r="34" fill="none" stroke="#eef1f8" stroke-width="4"/>
+    <circle cx="38" cy="38" r="34" fill="none" stroke="#2ec47b" stroke-width="4" stroke-linecap="round" stroke-dasharray="213.6" stroke-dashoffset="213.6" id="bigArc" style="transition:stroke-dashoffset .4s"/>
+  </svg><div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center"><div class="pct" id="bigPct">0%</div><div style="font-size:9px;color:#999">进度</div></div>`;
+}
+function ringSvg(pct,color,id){
+  const c=2*Math.PI*13;
+  return `<svg class="progress-ring" width="34" height="34">
+    <circle cx="17" cy="17" r="13" fill="none" stroke="#eef1f8" stroke-width="3"/>
+    <circle cx="17" cy="17" r="13" fill="none" stroke="${color}" stroke-width="3" stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${c}" id="${id}-arc" style="transition:stroke-dashoffset .4s"/>
+  </svg>`;
+}
+function setBigArc(pct){document.getElementById('bigArc').style.strokeDashoffset=213.6*(1-pct/100);}
+function setDevArc(id,pct){const el=document.getElementById(id+'-arc');if(el)el.style.strokeDashoffset=2*Math.PI*13*(1-pct/100);}
+function flashStart(){
+  if(prRunning)return;
+  prRunning=true;prDone=0;
+  const arr=[...selTargets]; const n=arr.length;
+  document.getElementById('prTotal').textContent=n;
+  document.getElementById('prTit').textContent='正在刷图中…';
+  document.getElementById('prEta').style.display='inline-block';
+  document.getElementById('flashStartBtn').disabled=true;
+  document.getElementById('progressList').innerHTML=arr.map((mac,i)=>
+    `<div class="tag-item" style="cursor:default" id="pr${i}">
+      <div class="tg-shot"><div class="qrcode"></div></div>
+      <div class="tg-info"><div class="tg-name">${tags.find(t=>t.mac===mac).name}</div><div class="tg-sub">${mac}</div></div>
+      <div class="status" id="prst${i}" style="display:flex;flex-direction:column;align-items:flex-end;gap:4px"><span class="stat-txt st-queue" style="font-size:12px;font-weight:500;color:#e6a23c">排队中</span></div>
+    </div>`).join('');
+  arr.forEach((mac,i)=>schedule(i));
+}
+function schedule(i){
+  setTimeout(()=>{
+    setTimeout(()=>{
+      let pct=0; setDevArc('prArc'+i,0);
+      document.getElementById('prst'+i).innerHTML=ringSvg(0,'#5b7cfa','prArc'+i)+'<span style="font-size:11px;color:#5b7cfa;font-weight:500">刷图中 0%</span>';
+      const iv=setInterval(()=>{
+        pct+=10+Math.random()*15;
+        if(pct>=100){clearInterval(iv);prOk(i);return;}
+        setDevArc('prArc'+i,pct);
+        document.getElementById('prst'+i).innerHTML=ringSvg(0,'#5b7cfa','prArc'+i)+`<span style="font-size:11px;color:#5b7cfa;font-weight:500">刷图中 ${Math.floor(pct)}%</span>`;
+      },300);
+    },500+i*700);
+  },300+i*700);
+}
+function prOk(i){
+  document.getElementById('prst'+i).innerHTML='<span style="font-size:12px;font-weight:500;color:#2ec47b">已完成 ✓</span>';
+  prDone++; const pct=Math.floor(prDone/[...selTargets].length*100);
+  document.getElementById('bigPct').textContent=pct+'%';setBigArc(pct);
+  document.getElementById('prOk').textContent=prDone;
+  if(prDone===[...selTargets].length)finishPr();
+}
+function finishPr(){
+  prRunning=false;
+  setBigArc(100);document.getElementById('bigPct').textContent='100%';
+  document.getElementById('prTit').textContent='全部完成';
+  document.getElementById('prEta').style.display='none';
+  document.getElementById('flashStartBtn').textContent='重新刷图';document.getElementById('flashStartBtn').disabled=false;
+  alert('全部设备刷图完成！');
+}
+function gotoMsg(){switchPage('msg');}
+
+/* ===== 初始化 ===== */
+renderTags();
+renderTpl();
+renderTargets();
+renderFlashPreview();
+initBigRing();
+</script>
+</body>
+</html>
