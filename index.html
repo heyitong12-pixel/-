@@ -1,184 +1,864 @@
 <!DOCTYPE html>
 <html lang="zh">
-<head><meta charset="UTF-8"><title>文件库视图切换 Mockup</title>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>多屏投放 · 管理员后台系统</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,"Segoe UI",Roboto,"PingFang SC","Microsoft YaHei",sans-serif}
-body{background:linear-gradient(135deg,#eaf2ff 0%,#f5e9ff 100%);padding:20px;min-height:100vh}
-.app{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:220px 1fr;gap:16px}
-.sidebar{background:#fff;border-radius:10px;padding:16px;height:fit-content;box-shadow:0 2px 8px rgba(0,0,0,.04)}
-.sidebar h4{font-size:14px;color:#333;margin-bottom:12px}
-.sidebar ul{list-style:none;font-size:13px;color:#555}
-.sidebar li{padding:8px 10px;border-radius:6px;cursor:pointer;margin-bottom:2px}
-.sidebar li.active{background:#e8f1ff;color:#1677ff;font-weight:500}
-.sidebar li:hover:not(.active){background:#f5f5f5}
-.sidebar a{display:block;color:#555;text-decoration:none}
-.sidebar .sep{border-top:1px solid #f0f0f0;margin:12px 0}
-.sidebar .test-title{font-size:12px;color:#999;margin-bottom:8px;font-weight:500}
-.main{background:#fff;border-radius:10px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,.04);min-height:560px;display:flex;flex-direction:column}
-.toolbar{display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap}
-.search{flex:1;min-width:220px;position:relative}
-.search input{width:100%;padding:8px 12px 8px 34px;border:1px solid #e0e0e0;border-radius:20px;font-size:13px;outline:none}
-.search input:focus{border-color:#1677ff}
-.search::before{content:"🔍";position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:12px;opacity:.5}
-.sort{padding:7px 12px;border:1px solid #e0e0e0;border-radius:6px;background:#fff;font-size:13px;cursor:pointer;color:#555}
-.view-toggle{display:inline-flex;border:1px solid #e0e0e0;border-radius:6px;overflow:hidden}
-.view-toggle button{border:none;background:#fff;padding:7px 12px;cursor:pointer;font-size:14px;color:#666;display:flex;align-items:center;gap:5px;transition:all .2s}
-.view-toggle button.active{background:#1677ff;color:#fff}
-.view-toggle button:not(.active):hover{background:#f5f5f5}
-.hint{font-size:12px;color:#1677ff;background:#e8f1ff;padding:4px 10px;border-radius:12px;margin-left:auto}
-/* 卡片视图 */
-.card-view{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:16px;flex:1;align-content:start}
-.card{border:1px solid #eee;border-radius:8px;padding:14px;text-align:center;cursor:pointer;transition:all .2s}
-.card:hover{box-shadow:0 4px 12px rgba(22,119,255,.15);transform:translateY(-2px)}
-.card .icon{width:60px;height:70px;margin:0 auto 10px;border-radius:4px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;font-weight:bold}
-.card .name{font-size:12px;color:#333;word-break:break-all;line-height:1.4}
-/* 列表视图 */
-.list-view{flex:1;overflow:auto}
-.list-view table{width:100%;border-collapse:collapse;font-size:13px}
-.list-view th{background:#fafafa;padding:10px 12px;text-align:left;font-weight:500;color:#555;border-bottom:1px solid #eee;position:sticky;top:0;cursor:pointer;user-select:none;white-space:nowrap}
-.list-view th:hover{background:#f0f0f0}
-.list-view th::after{content:" ⇅";opacity:.3;font-size:11px}
-.list-view td{padding:10px 12px;border-bottom:1px solid #f5f5f5;color:#444}
-.list-view tbody tr:hover{background:#f8fbff}
-.list-view tbody tr:nth-child(even){background:#fcfcfc}
-.list-view tbody tr:nth-child(even):hover{background:#f8fbff}
-.file-cell{display:flex;align-items:center;gap:10px}
-.file-icon{width:22px;height:26px;border-radius:3px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:9px;font-weight:bold;flex-shrink:0}
-.pdf{background:#e74c3c}.doc{background:#2b579a}.xls{background:#217346}.img{background:#f39c12}.zip{background:#7f8c8d}
-.actions a{color:#1677ff;margin-right:10px;text-decoration:none;font-size:12px;cursor:pointer}
-.actions a:hover{text-decoration:underline}
-.pagination{display:flex;align-items:center;justify-content:center;gap:10px;padding-top:16px;margin-top:auto;border-top:1px solid #f0f0f0;font-size:12px;color:#666;flex-wrap:wrap}
-.pagination button{border:1px solid #e0e0e0;background:#fff;padding:4px 10px;border-radius:4px;cursor:pointer}
-.pagination .cur{background:#1677ff;color:#fff;border-color:#1677ff}
-.hidden{display:none!important}
-.checkbox{margin-right:6px}
-</style></head>
+body{background:#f0f2f7;color:#222;display:flex;min-height:100vh}
+/* ===== 深色侧边栏 ===== */
+.sidebar{width:230px;background:linear-gradient(180deg,#0e1a33,#1a2a4f);color:#fff;flex-shrink:0;display:flex;flex-direction:column}
+.sidebar .logo{height:58px;display:flex;align-items:center;gap:10px;padding:0 20px;font-size:15px;font-weight:700;border-bottom:1px solid rgba(255,255,255,.08)}
+.sidebar .logo .lg-ic{font-size:22px}
+.sidebar .logo small{font-size:11px;opacity:.6;font-weight:400}
+.sidebar .nav{padding:12px 10px;flex:1;overflow-y:auto}
+.sidebar .nav-item{display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:8px;font-size:13px;color:#a7b4d4;cursor:pointer;margin-bottom:2px}
+.sidebar .nav-item:hover{background:rgba(255,255,255,.06);color:#fff}
+.sidebar .nav-item.active{background:rgba(91,124,250,.3);color:#fff;font-weight:600;border-left:3px solid #5b7cfa}
+.sidebar .nav-item .ni-ic{font-size:16px;width:20px;text-align:center}
+/* ===== 主区 ===== */
+.main{flex:1;display:flex;flex-direction:column;min-width:0}
+.topbar{height:56px;background:#fff;border-bottom:1px solid #eef1f8;display:flex;align-items:center;padding:0 24px;gap:14px;flex-shrink:0}
+.topbar .tb-bc{font-size:13px;color:#888}
+.topbar .tb-bc b{color:#333;font-weight:600}
+.topbar .tb-right{margin-left:auto;display:flex;align-items:center;gap:16px}
+.topbar .tb-user{display:flex;align-items:center;gap:8px;font-size:13px}
+.topbar .tb-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#5b7cfa,#6a5bfa);display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px}
+.content{padding:20px 24px;flex:1;overflow-y:auto}
+/* 通用 */
+.card{background:#fff;border-radius:12px;padding:20px;box-shadow:0 1px 6px rgba(0,0,0,.04);margin-bottom:16px}
+.btn{padding:9px 20px;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:transform .1s;display:inline-flex;align-items:center;gap:6px}
+.btn:active{transform:scale(.97)}
+.btn-primary{background:#5b7cfa;color:#fff}
+.btn-primary:hover{background:#4a6cf0}
+.btn-ghost{background:#fff;color:#5b7cfa;border:1px solid #5b7cfa}
+.btn-sm{padding:5px 12px;font-size:12px}
+/* ===== 列表页 ===== */
+.page-head{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.page-head .ph-search{width:300px;position:relative}
+.page-head .ph-search input{width:100%;padding:9px 12px 9px 34px;border:1px solid #e0e4f0;border-radius:8px;font-size:13px;outline:none}
+.page-head .ph-search input:focus{border-color:#5b7cfa}
+.page-head .ph-search::before{content:"🔍";position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:12px;opacity:.5}
+.page-head .ph-spacer{flex:1}
+/* 任务卡片 */
+.task-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.task-card{border-radius:8px;padding:0;background:#fff;box-shadow:0 1px 6px rgba(0,0,0,.04);border:2px solid #f0f0f0;overflow:hidden;transition:box-shadow .2s}
+.task-card:hover{box-shadow:0 6px 20px rgba(0,0,0,.08)}
+.task-card .tc-thumb{height:130px;background:#f5f7fb;display:flex;align-items:center;justify-content:center;position:relative}
+.task-card .tc-thumb .ic{width:80px;height:60px;border:1px solid #c9cfdd;border-radius:4px;display:flex;align-items:center;justify-content:center;color:#9aa3b5;font-size:11px}
+.task-card .tc-badge{position:absolute;top:10px;left:10px;font-size:11px;padding:3px 10px;border-radius:10px;font-weight:600}
+.b-edit{background:#fff3e6;color:#e6a23c}      /* 编辑中：橙 */
+.b-pending{background:#eef2ff;color:#5b7cfa}    /* 待播放：蓝 */
+.b-play{background:#e8faf1;color:#1c9d5f}       /* 播放中：绿 */
+.b-fail{background:#fdeeee;color:#e0574b}       /* 播放失败：红 */
+.task-card .tc-body{padding:14px 16px}
+.task-card .tc-name{font-size:14px;font-weight:600;margin-bottom:8px}
+.task-card .tc-fields{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+.tc-field{font-size:12px;color:#555;border-radius:4px;padding:3px 6px;display:block}
+.tc-field .tf-key{display:inline-block;min-width:60px;color:#999}
+.tc-field .tf-val{color:#333;font-weight:500}
+.task-card .tc-actions{display:flex;gap:8px;padding:0 16px 14px}
+/* ===== 向导步骤条 ===== */
+.wizard{display:flex;gap:24px}
+.wizard .w-steps{width:200px;flex-shrink:0}
+.w-step{display:flex;gap:12px;padding:12px;border-radius:10px;cursor:pointer;color:#999}
+.w-step .w-num{width:28px;height:28px;border-radius:50%;border:1.5px solid #c9cfdd;background:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;flex-shrink:0;color:#999}
+.w-step.active .w-num{background:#edf2ff;border-color:#5b7cfa;color:#5b7cfa}
+.w-step.done .w-num{background:#5b7cfa;border-color:#5b7cfa;color:#fff}
+.w-step .w-txt{font-size:13px;font-weight:500;line-height:1.6}
+.w-step .w-sub{font-size:11px;color:#999}
+.w-step.active{color:#222}
+.w-step.active .w-txt{color:#5b7cfa;font-weight:600}
+.wizard .w-main{flex:1;min-width:0}
+.w-pane{display:none}.w-pane.active{display:block}
+/* 步骤内容卡片 */
+.w-card{background:#fff;border-radius:12px;padding:30px;box-shadow:0 1px 6px rgba(0,0,0,.04);min-height:340px;position:relative}
+.w-card .wc-tit{font-size:16px;font-weight:600;margin-bottom:24px}
+.w-card .wc-tit .sub{font-size:12px;color:#999;font-weight:400;margin-left:8px}
+.w-foot{display:flex;gap:10px;margin-top:24px}
+.w-foot .left{flex:1}
+.w-foot .right{margin-left:auto;display:flex;gap:10px}
+/* 输入 */
+.input{width:100%;border:1px solid #e0e4f0;border-radius:8px;padding:10px 14px;font-size:13px;outline:none}
+.input:focus{border-color:#5b7cfa}
+.label{font-size:13px;color:#333;margin-bottom:10px;display:block;font-weight:500}
+/* 播放模式 */
+.mode-cards{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:20px 0}
+.mode-card{border:1px solid #c9cfdd;border-radius:8px;padding:30px 20px;text-align:center;cursor:pointer;transition:all .2s}
+.mode-card:hover{border-color:#5b7cfa}
+.mode-card.selected{border-color:#5b7cfa;background:#f5f8ff}
+.mode-card .mc-icon{width:90px;height:60px;border:1px solid #c9cfdd;border-radius:6px;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;color:#9aa3b5;font-size:11px}
+.mode-card .mc-name{font-size:15px;font-weight:700;margin-bottom:6px}
+.mode-card .mc-desc{font-size:11px;color:#999;line-height:1.6}
+/* 设备选择 */
+.dev-toolbar{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.dev-toolbar select{padding:7px 10px;border:1px solid #e0e4f0;border-radius:6px;font-size:12px;background:#fff}
+.dev-toolbar .search{flex:1;position:relative;max-width:280px}
+.dev-toolbar .search input{width:100%;padding:7px 12px 7px 30px;border:1px solid #e0e4f0;border-radius:6px;font-size:12px;outline:none}
+.dev-toolbar .search::before{content:"🔍";position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:11px;opacity:.5}
+.dev-toolbar .count{margin-left:auto;font-size:12px;color:#666}
+.dev-warn{background:#fdeeee;color:#e0574b;border-radius:8px;padding:8px 12px;font-size:12px;margin-bottom:12px;display:none;border:1px solid #f3c6c2}
+.dev-warn.show{display:block}
+.dev-table{width:100%;border-collapse:collapse;font-size:13px}
+.dev-table th{background:#fafbff;padding:10px 14px;text-align:left;font-weight:500;color:#666;border-bottom:1px solid #eef1f8}
+.dev-table td{padding:10px 14px;border-bottom:1px solid #f5f6fa;color:#444}
+.dev-table .chk{width:18px;height:18px;accent-color:#5b7cfa;cursor:pointer}
+.tag-online{background:#e8faf1;color:#1c9d5f;padding:2px 10px;border-radius:10px;font-size:11px;font-weight:600}
+.tag-offline{background:#f2f4f8;color:#9aa3b5;padding:2px 10px;border-radius:10px;font-size:11px;font-weight:600}
+.pager{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:14px;font-size:12px;color:#666}
+.pager .pg{width:24px;height:24px;border-radius:4px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.pager .pg.active{background:#5b7cfa;color:#fff}
+.pager .pg:hover:not(.active){background:#eef2ff}
+/* 拼接布局 */
+.layout-ctrl{display:flex;align-items:center;gap:30px;margin-bottom:20px}
+.layout-ctrl .lc-item{display:flex;align-items:center;gap:8px;font-size:13px;color:#333}
+.layout-ctrl input[type="number"]{width:50px;border:1px solid #e0e4f0;border-radius:6px;padding:5px 8px;text-align:center;font-size:13px;outline:none;background:#fff}
+.layout-ctrl input[type="number"].invalid{border-color:#f56c6c;background:#fff5f6}
+.layout-ctrl .lc-hint{font-size:13px;color:#666}
+.layout-ctrl .lc-hint #layoutOptions{color:#5b7cfa;font-family:Menlo,Consolas,monospace;letter-spacing:.3px}
+.layout-warn{background:#fff5f6;border:1px solid #ffd5d8;border-radius:6px;padding:8px 12px;font-size:12px;color:#e64545;display:none;margin-bottom:14px}
+.layout-warn.show{display:block}
+.wall-preview{background:#c9cfdd;border-radius:10px;padding:20px;display:grid;gap:14px;margin:0 80px}
+.wall-preview.invalid{background:#ffe9e6;outline:2px dashed #f56c6c;outline-offset:-6px}
+.wall-preview.invalid .wall-cell{opacity:.7;cursor:not-allowed!important;filter:grayscale(.5)}
+.wall-preview.invalid .wall-cell.filled{cursor:not-allowed!important}
+.wall-preview.invalid::after{content:'🔒 布局锁定：请先调整行/列使乘积等于设备数';display:block;grid-column:1/-1;text-align:center;color:#e64545;font-size:13px;padding:8px;background:#fff5f6;border-radius:6px;margin-top:6px}
+.wall-cell{background:#fff;border-radius:6px;height:120px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#c9cfdd;font-size:11px;transition:transform .15s,box-shadow .15s,border-color .15s;padding:6px 8px;overflow:hidden}
+.wall-cell.filled{cursor:move;color:#333;font-size:12px}
+.wall-cell.filled:hover{box-shadow:0 4px 14px rgba(91,124,250,.25);transform:translateY(-2px)}
+.wall-cell.empty{cursor:default}
+.wall-cell.dragging{opacity:.35;transform:scale(.97)}
+.wall-cell.drag-over{background:#eef2ff;border:2px dashed #5b7cfa;box-sizing:border-box}
+.wall-cell .wc-name{font-weight:600;color:#222;font-size:12px;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.wall-cell .wc-mac{font-size:10px;color:#888;font-family:Menlo,Consolas,'Courier New',monospace;letter-spacing:0;white-space:nowrap}
+/* 上传视频 */
+.upload-zone{background:#eef2ff;border-radius:10px;padding:60px 30px;text-align:center;margin-bottom:24px}
+.upload-zone .uz-ic{width:90px;height:60px;border:1px solid #c9cfdd;border-radius:6px;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;color:#9aa3b5;font-size:11px}
+.upload-zone .uz-txt{font-size:14px;font-weight:600;color:#5b7cfa;margin-bottom:8px}
+.upload-zone .uz-sub{font-size:12px;color:#999}
+.video-info{font-size:13px;color:#555;line-height:2}
+.video-info .vi-row{display:flex;gap:8px}
+.video-info .vi-row .k{color:#666;width:80px;flex-shrink:0}
+/* 弹窗 */
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:80;align-items:center;justify-content:center}
+.modal.show{display:flex}
+.modal .m-box{background:#fff;border-radius:14px;width:420px;padding:28px;text-align:center;box-shadow:0 12px 40px rgba(0,0,0,.2)}
+.modal .m-icon{font-size:48px;margin-bottom:12px}
+.modal .m-tit{font-size:18px;font-weight:700;margin-bottom:10px}
+.modal .m-body{font-size:14px;color:#666;line-height:1.8;margin-bottom:20px}
+.modal .m-actions{display:flex;gap:10px;justify-content:center}
+/* Toast */
+.toast{position:fixed;left:50%;top:20%;transform:translateX(-50%);background:rgba(0,0,0,.78);color:#fff;font-size:14px;padding:12px 24px;border-radius:10px;z-index:100;box-shadow:0 6px 20px rgba(0,0,0,.25);animation:fadeIn .25s ease;pointer-events:none}
+@keyframes fadeIn{from{opacity:0;transform:translate(-50%,-12%)}to{opacity:1;transform:translate(-50%,0)}}
+/* 右侧交互说明 */
+.interact-panel{position:fixed;top:0;right:0;bottom:0;width:380px;background:#fff;box-shadow:-4px 0 24px rgba(0,0,0,.1);z-index:90;transform:translateX(105%);transition:transform .3s ease;display:flex;flex-direction:column}
+.interact-panel.show{transform:translateX(0)}
+.ia-toggle{position:fixed;right:16px;bottom:24px;z-index:91;background:#5b7cfa;color:#fff;border:none;border-radius:24px;padding:11px 16px;font-size:13px;font-weight:600;cursor:pointer;box-shadow:0 4px 14px rgba(91,124,250,.35)}
+.ia-head{background:linear-gradient(135deg,#5b7cfa,#6a5bfa);color:#fff;padding:16px 18px;display:flex;align-items:center;gap:10px}
+.ia-head .ih-tit{font-size:15px;font-weight:700;flex:1}
+.ia-head .ih-close{font-size:22px;cursor:pointer}
+.ia-body{flex:1;overflow-y:auto;padding:16px 18px;background:#fafbfe}
+.ia-body h3{font-size:14px;color:#5b7cfa;margin:16px 0 8px;padding-bottom:6px;border-bottom:1px solid #eef1f8}
+.ia-body h3:first-child{margin-top:0}
+.ia-body ul{margin:4px 0 4px 18px}
+.ia-body li{font-size:12px;color:#555;line-height:1.8}
+.ia-body .note{background:#eef2ff;border-radius:8px;padding:8px 10px;font-size:12px;color:#5b7cfa;margin:8px 0}
+.ia-body .st-item{background:#fff;border:1px solid #e8ecf7;border-left:4px solid #5b7cfa;border-radius:8px;padding:10px 12px;font-size:12px;color:#555;line-height:1.7;margin-bottom:8px}
+.ia-body .st-item b{color:#222}
+.ia-body table{width:100%;border-collapse:collapse;font-size:11px;margin:8px 0}
+.ia-body th{background:#f0f3ff;color:#333;padding:6px 8px;text-align:left;border:1px solid #e3e8f5}
+.ia-body td{padding:6px 8px;border:1px solid #e8ecf7;color:#555}
+@media (min-width:980px){
+  body.ia-open .content{transition:margin-right .3s ease;margin-right:380px}
+}
+</style>
+</head>
 <body>
-<div class="app">
-  <aside class="sidebar">
-    <h4>全部分类</h4>
-    <ul>
-      <li>Technical Support</li>
-      <li style="padding-left:22px">Cloud Platform</li>
-      <li style="padding-left:22px">Gateway</li>
-      <li style="padding-left:22px">ESL</li>
-      <li style="padding-left:22px">APP</li>
-      <li class="active" style="padding-left:22px">MQTT</li>
-      <li style="padding-left:22px">Deployment</li>
-      <li>After-sales Service</li>
-      <li>Product Information</li>
-    </ul>
-    <div class="sep"></div>
-    <div class="test-title">APP 原型</div>
-    <ul>
-      <li style="padding-left:22px"><a href="esl-app.html" style="color:#1677ff;font-weight:500">★ 电子标签刷图 APP 完整原型</a></li>
-      <li style="padding-left:22px"><a href="optimization.html" style="color:#1677ff;font-weight:500">★ 优化原型（单文件）</a></li>
-    </ul>
-    <div class="sep"></div>
-    <div class="test-title">PC 端原型</div>
-    <ul>
-      <li style="padding-left:22px"><a href="lcd-wall.html" style="color:#1677ff;font-weight:500">★ LCD 多屏投放原型</a></li>
-    </ul>
-    <div class="sep"></div>
-    <div class="test-title">跳转测试页面</div>
-    <ul>
-      <li><a href="page1.html">测试页 1 · 数据表格</a></li>
-      <li><a href="page2.html">测试页 2 · 卡片列表</a></li>
-      <li><a href="page3.html">测试页 3 · 表单</a></li>
-    </ul>
-  </aside>
-  <section class="main">
-    <div class="toolbar">
-      <div class="search"><input placeholder="请输入名称"></div>
-      <select class="sort">
-        <option>按修改时间</option><option>按名称</option><option>按大小</option><option>按类型</option>
-      </select>
-      <div class="view-toggle" id="vt">
-        <button data-v="card" class="active" title="卡片视图">▦ 卡片</button>
-        <button data-v="list" title="列表视图（详细信息）">☰ 列表</button>
+<!-- 深色侧边栏 -->
+<aside class="sidebar">
+  <div class="logo"><span class="lg-ic">🏢</span> 管理员后台<small>系统</small></div>
+  <div class="nav">
+    <div class="nav-item active"><span class="ni-ic">🏠</span> 多屏投放</div>
+  </div>
+</aside>
+
+<!-- 主区 -->
+<div class="main">
+  <div class="topbar">
+    <div class="tb-bc">🏠 <b>门店管理</b> / <b>门店1</b> / <b>多屏投放</b> <span id="tbCrumb"></span></div>
+    <div class="tb-right">
+      <span style="font-size:18px;cursor:pointer">🔔</span>
+      <div class="tb-user"><div class="tb-avatar">管</div>管理员</div>
+    </div>
+  </div>
+
+  <div class="content">
+    <!-- ===== 列表页 ===== -->
+    <div id="p-list">
+      <div class="page-head">
+        <div class="ph-search"><input id="searchInput" placeholder="搜索任务名称" oninput="renderTasks()"></div>
+        <div class="ph-spacer"></div>
+        <button class="btn btn-primary" onclick="startCreate()">新建任务</button>
       </div>
-      <span class="hint">新增视图切换入口</span>
+      <div class="task-grid" id="taskGrid"></div>
     </div>
 
-    <div class="card-view" id="cardView">
-      <div class="card"><div class="icon pdf">PDF</div><div class="name">MQTT Subscribe Instruction.pdf</div></div>
-      <div class="card"><div class="icon pdf">PDF</div><div class="name">MQTT Broker Config Guide.pdf</div></div>
-      <div class="card"><div class="icon doc">DOC</div><div class="name">Topic Naming Conventions.docx</div></div>
-      <div class="card"><div class="icon xls">XLS</div><div class="name">Device Topic Mapping.xlsx</div></div>
-      <div class="card"><div class="icon pdf">PDF</div><div class="name">TLS Certificate Setup.pdf</div></div>
-      <div class="card"><div class="icon img">PNG</div><div class="name">architecture-diagram.png</div></div>
-      <div class="card"><div class="icon zip">ZIP</div><div class="name">sample-clients.zip</div></div>
-      <div class="card"><div class="icon doc">DOC</div><div class="name">FAQ - Connection Issues.docx</div></div>
+    <!-- ===== 新建/编辑向导 ===== -->
+    <div id="p-create" style="display:none">
+      <div class="page-head" style="margin-bottom:8px">
+        <span style="display:flex;align-items:center;gap:14px"><button class="btn btn-ghost btn-sm" onclick="goList()">← 返回</button><span style="font-size:16px;font-weight:600">新建任务</span></span>
+      </div>
+      <div class="wizard">
+        <div class="w-steps">
+          <div class="w-step active" data-w="1"><div class="w-num">1</div><div><div class="w-txt">基本信息</div><div class="w-sub">命名任务</div></div></div>
+          <div class="w-step" data-w="2"><div class="w-num">2</div><div><div class="w-txt">播放模式</div><div class="w-sub">拼接同步</div></div></div>
+          <div class="w-step" data-w="3"><div class="w-num">3</div><div><div class="w-txt">选择设备</div><div class="w-sub">同型号同分辨率</div></div></div>
+          <div class="w-step" data-w="4"><div class="w-num">4</div><div><div class="w-txt">编排布局</div><div class="w-sub">仅拼接模式</div></div></div>
+          <div class="w-step" data-w="5"><div class="w-num">5</div><div><div class="w-txt">上传视频</div><div class="w-sub">手动上传</div></div></div>
+        </div>
+        <div class="w-main">
+          <!-- 步骤1 基本信息 -->
+          <div class="w-pane active" data-pane="1">
+            <div class="w-card">
+              <div class="wc-tit">分组名称</div>
+              <input class="input" id="inName" placeholder="" maxlength="50">
+            </div>
+          </div>
+          <!-- 步骤2 播放模式 -->
+          <div class="w-pane" data-pane="2">
+            <div class="w-card">
+              <div class="wc-tit">选择播放模式</div>
+              <div class="mode-cards">
+                <div class="mode-card" id="mode-splice" onclick="pickMode('splice')"><div class="mc-icon">icon</div><div class="mc-name">拼接播放</div><div class="mc-desc">N 台设备拼成一个大画面<br>每台显示视频的一部分</div></div>
+                <div class="mode-card" id="mode-sync" onclick="pickMode('sync')"><div class="mc-icon">icon</div><div class="mc-name">同步播放</div><div class="mc-desc">N 台设备将成一个大画面<br>每台显示视频的一部分</div></div>
+              </div>
+            </div>
+          </div>
+          <!-- 步骤3 选择设备 -->
+          <div class="w-pane" data-pane="3">
+            <div class="w-card">
+              <div class="wc-tit">选择设备</div>
+              <div class="dev-toolbar">
+                <select id="sizeFilter" onchange="switchSize()">
+                  <option value="10.1寸" selected>10.1寸</option>
+                  <option value="15.6寸">15.6寸</option>
+                  <option value="23.1寸">23.1寸</option>
+                  <option value="35寸">35寸</option>
+                  <option value="47.1寸">47.1寸</option>
+                  <option value="28.6寸">28.6寸</option>
+                  <option value="37.6寸">37.6寸</option>
+                  <option value="43.8寸">43.8寸</option>
+                  <option value="26.5寸">26.5寸</option>
+                </select>
+                <div class="search"><input id="macInput" placeholder="请输入mac" oninput="renderDevTable()"></div>
+                <div class="count">已选 <b id="selCount">0</b>台</div>
+              </div>
+              <div class="dev-warn" id="devWarn">⚠️ 只能选择同型号、同分辨率的 LCD 设备，请移除不同型号设备</div>
+              <table class="dev-table">
+                <thead><tr><th style="width:40px"></th><th>设备名称</th><th>设备尺寸</th><th>分辨率</th><th>状态</th></tr></thead>
+                <tbody id="devBody"></tbody>
+              </table>
+              <div class="pager" id="pagerBox"></div>
+            </div>
+          </div>
+          <!-- 步骤4 编排布局 -->
+          <div class="w-pane" data-pane="4">
+            <div class="w-card">
+              <div class="wc-tit">拼接布局 <span class="sub">视频按你的排列切分</span></div>
+              <div class="layout-ctrl">
+                <div class="lc-item">行数 <input id="inRows" type="number" min="1" max="6" value="2" oninput="syncLayout('rows')"></div>
+                <div class="lc-item">列数 <input id="inCols" type="number" min="1" max="6" value="3" oninput="syncLayout('cols')"></div>
+                <div class="lc-hint"><b id="wallCount">6</b> 台设备，可布局为 <span id="layoutOptions">—</span></div>
+              </div>
+              <div class="layout-warn" id="layoutWarn">⚠️ 行×列 必须等于 已选设备数，否则无法保存</div>
+              <div id="wallPreview" class="wall-preview"></div>
+            </div>
+          </div>
+          <!-- 步骤5 上传视频 -->
+          <div class="w-pane" data-pane="5">
+            <div class="w-card">
+              <div class="wc-tit">上传视频 <span class="sub">视频按你的排列切分</span></div>
+              <div class="upload-zone" onclick="uploadVideo()"><div class="uz-ic">icon</div><div class="uz-txt">点击上传视频</div><div class="uz-sub">支持MP4，建议视频分辨率与拼接墙总分辨率一致</div></div>
+              <div class="video-info" id="videoInfo" style="display:none">
+                <div class="vi-row"><span class="k">视频名称：</span><span id="vi_name">-</span></div>
+                <div class="vi-row"><span class="k">时长：</span><span id="vi_dur">-</span></div>
+                <div class="vi-row"><span class="k">分辨率：：</span><span id="vi_res">-</span></div>
+                <div class="vi-row"><span class="k">大小：</span><span id="vi_size">-</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="w-foot">
+            <div class="left"><button class="btn btn-ghost" onclick="prevStep()">上一步</button><button class="btn btn-ghost" onclick="saveDraft()">保存</button></div>
+            <div class="right"><button class="btn btn-primary" id="btnNext" onclick="nextStep()">下一步</button></div>
+          </div>
+        </div>
+      </div>
     </div>
-
-    <div class="list-view hidden" id="listView">
-      <table>
-        <thead><tr>
-          <th style="width:32px"><input type="checkbox"></th>
-          <th>文件名</th><th>类型</th><th>大小</th><th>修改时间</th><th>上传人</th><th style="cursor:default">操作</th>
-        </tr></thead>
-        <tbody>
-          <tr><td><input type="checkbox" class="checkbox"></td><td><div class="file-cell"><div class="file-icon pdf">PDF</div>MQTT Subscribe Instruction.pdf</div></td><td>PDF</td><td>1.2 MB</td><td>2026-06-28 14:20</td><td>admin</td><td class="actions"><a>预览</a><a>下载</a><a>分享</a></td></tr>
-          <tr><td><input type="checkbox" class="checkbox"></td><td><div class="file-cell"><div class="file-icon pdf">PDF</div>MQTT Broker Config Guide.pdf</div></td><td>PDF</td><td>2.8 MB</td><td>2026-06-25 09:11</td><td>lisa</td><td class="actions"><a>预览</a><a>下载</a><a>分享</a></td></tr>
-          <tr><td><input type="checkbox" class="checkbox"></td><td><div class="file-cell"><div class="file-icon doc">DOC</div>Topic Naming Conventions.docx</div></td><td>Word</td><td>340 KB</td><td>2026-06-20 16:45</td><td>tom</td><td class="actions"><a>预览</a><a>下载</a><a>分享</a></td></tr>
-          <tr><td><input type="checkbox" class="checkbox"></td><td><div class="file-cell"><div class="file-icon xls">XLS</div>Device Topic Mapping.xlsx</div></td><td>Excel</td><td>580 KB</td><td>2026-06-18 10:03</td><td>tom</td><td class="actions"><a>预览</a><a>下载</a><a>分享</a></td></tr>
-          <tr><td><input type="checkbox" class="checkbox"></td><td><div class="file-cell"><div class="file-icon pdf">PDF</div>TLS Certificate Setup.pdf</div></td><td>PDF</td><td>1.5 MB</td><td>2026-06-15 11:22</td><td>admin</td><td class="actions"><a>预览</a><a>下载</a><a>分享</a></td></tr>
-          <tr><td><input type="checkbox" class="checkbox"></td><td><div class="file-cell"><div class="file-icon img">PNG</div>architecture-diagram.png</div></td><td>图片</td><td>820 KB</td><td>2026-06-12 15:33</td><td>lisa</td><td class="actions"><a>预览</a><a>下载</a><a>分享</a></td></tr>
-          <tr><td><input type="checkbox" class="checkbox"></td><td><div class="file-cell"><div class="file-icon zip">ZIP</div>sample-clients.zip</div></td><td>压缩包</td><td>4.6 MB</td><td>2026-06-10 09:00</td><td>admin</td><td class="actions"><a>下载</a><a>分享</a></td></tr>
-          <tr><td><input type="checkbox" class="checkbox"></td><td><div class="file-cell"><div class="file-icon doc">DOC</div>FAQ - Connection Issues.docx</div></td><td>Word</td><td>210 KB</td><td>2026-06-08 17:40</td><td>tom</td><td class="actions"><a>预览</a><a>下载</a><a>分享</a></td></tr>
-        </tbody>
-      </table>
-    </div>
-
-    <div class="pagination">
-      <span>共 8 条记录 第 1/1 页</span>
-      <button>‹</button><button class="cur">1</button><button>›</button>
-      <select class="sort" id="pageSize"><option>12条/页</option><option>20条/页</option><option>50条/页</option></select>
-      <span>到第</span><input style="width:36px;padding:2px;border:1px solid #e0e0e0;border-radius:4px"><span>页</span>
-      <button>确定</button>
-    </div>
-  </section>
+  </div>
 </div>
+
+<!-- 完成弹窗 -->
+<div class="modal" id="doneModal">
+  <div class="m-box"><div class="m-icon">✅</div><div class="m-tit">任务创建成功</div><div class="m-body" id="doneBody"></div>
+  <div class="m-actions"><button class="btn btn-primary" onclick="closeModal('doneModal');goList()">完成</button></div></div>
+</div>
+
+<!-- 删除确认弹窗 -->
+<div class="modal" id="delModal">
+  <div class="m-box">
+    <div class="m-icon">🗑️</div>
+    <div class="m-tit">确认删除任务？</div>
+    <div class="m-body">删除任务「<b id="delName" style="color:#e0574b"></b>」后，<br>该任务设备未开始播放，删除后任务表单将移除。</div>
+    <div class="m-actions">
+      <button class="btn btn-ghost" onclick="closeModal('delModal')">取消</button>
+      <button class="btn btn-primary" style="flex:1;background:#e0574b;border-color:#e0574b" onclick="confirmDelete()">确认删除</button>
+    </div>
+  </div>
+</div>
+
+<!-- 结束任务确认弹窗 -->
+<div class="modal" id="finishModal">
+  <div class="m-box">
+    <div class="m-icon">⏹️</div>
+    <div class="m-tit">确认结束任务？</div>
+    <div class="m-body">结束任务「<b id="finishName" style="color:#e0574b"></b>」后，<br>将停止设备播放，<b>设备从分组中解放</b>（恢复独立）。</div>
+    <div class="m-actions">
+      <button class="btn btn-ghost" onclick="closeModal('finishModal')">取消</button>
+      <button class="btn btn-primary" style="flex:1;background:#e0574b;border-color:#e0574b" onclick="confirmFinish()">确认结束</button>
+    </div>
+  </div>
+</div>
+
+<!-- 交互说明面板 -->
+<button class="ia-toggle" id="iaToggle" onclick="toggleIA()">📄 交互说明</button>
+<div class="interact-panel" id="iaPanel">
+  <div class="ia-head"><span class="ih-tit">📄 多屏投放 · 交互说明</span><span class="ih-close" onclick="toggleIA()">×</span></div>
+  <div class="ia-body" id="iaBody"></div>
+</div>
+
 <script>
-const btns=document.querySelectorAll('#vt button');
-const card=document.getElementById('cardView'),list=document.getElementById('listView'),ps=document.getElementById('pageSize');
-btns.forEach(b=>b.addEventListener('click',()=>{
-  btns.forEach(x=>x.classList.remove('active'));b.classList.add('active');
-  const v=b.dataset.v;
-  card.classList.toggle('hidden',v!=='card');
-  list.classList.toggle('hidden',v!=='list');
-  ps.selectedIndex=v==='list'?1:0;
-}));
-</script>
-<script data-tabbit-widget-diagnostics="true">
-(function(){
-  if (window.__tabbitWidgetDiagnosticsInstalled) return;
-  window.__tabbitWidgetDiagnosticsInstalled = true;
-  window.__TABBIT_WIDGET_ERRORS__ = window.__TABBIT_WIDGET_ERRORS__ || [];
-  function emit(level, args) {
-    var payload = {
-      type: "tabbit_widget_diagnostics",
-      level: level,
-      message: Array.prototype.slice.call(args || []).map(function(item) {
-        if (item && item.stack) return item.stack;
-        if (typeof item === "string") return item;
-        try { return JSON.stringify(item); } catch (_) { return String(item); }
-      }).join(" "),
-      timestamp: Date.now()
-    };
-    window.__TABBIT_WIDGET_ERRORS__.push(payload);
-    try { window.parent && window.parent.postMessage(payload, "*"); } catch (_) {}
+/* ===== 任务数据（按原型：3 张卡片：编辑中绿/播放中绿/播放失败绿） ===== */
+let tasks=[
+  {id:'t1',name:'编辑中任务',icon:'icon',status:'edit',devices:6,layout:'2×3',mode:'拼接/同步',video:'xxxxxxxx视频.MP4',model:'10.1寸LCD设备 800*1280',lastStep:3},
+  {id:'t2',name:'待播放任务',icon:'icon',status:'pending',devices:6,layout:'2×3',mode:'拼接/同步',video:'xxxxxxxx视频.MP4',model:'10.1寸LCD设备 800*1280'},
+  {id:'t3',name:'播放中任务',icon:'icon',status:'play',devices:6,layout:'2×3',mode:'拼接/同步',video:'xxxxxxxx视频.MP4',model:'10.1寸LCD设备 800*1280'},
+  {id:'t4',name:'播放失败任务',icon:'icon',status:'fail',devices:6,layout:'2×3',mode:'拼接/同步',video:'xxxxxxxx视频.MP4',model:'10.1寸LCD设备 800*1280'}
+];
+let curStep=1,curDevices=[],videoUploaded=false,playMode='',editingId=null,modeTouched=false;
+let pageNo=1,pageSize=10; // 分页状态
+
+const allDevices=[
+  // 10.1寸（默认选中，竖屏，12台便于演示跨页）
+  {id:1,name:'大厅屏 01',mac:'AA:BB:CC:01:00:01',size:'10.1寸',res:'800*1280',status:'on',rotate:false},
+  {id:2,name:'大厅屏 02',mac:'AA:BB:CC:01:00:02',size:'10.1寸',res:'800*1280',status:'on',rotate:false},
+  {id:3,name:'大厅屏 03',mac:'AA:BB:CC:01:00:03',size:'10.1寸',res:'800*1280',status:'on',rotate:false},
+  {id:4,name:'大厅屏 04',mac:'AA:BB:CC:01:00:04',size:'10.1寸',res:'800*1280',status:'off',rotate:false},
+  {id:5,name:'大厅屏 05',mac:'AA:BB:CC:01:00:05',size:'10.1寸',res:'800*1280',status:'on',rotate:false},
+  {id:6,name:'大厅屏 06',mac:'AA:BB:CC:01:00:06',size:'10.1寸',res:'800*1280',status:'on',rotate:false},
+  {id:7,name:'大厅屏 07',mac:'AA:BB:CC:01:00:07',size:'10.1寸',res:'800*1280',status:'on',rotate:false},
+  {id:8,name:'大厅屏 08',mac:'AA:BB:CC:01:00:08',size:'10.1寸',res:'800*1280',status:'on',rotate:false},
+  {id:9,name:'大厅屏 09',mac:'AA:BB:CC:01:00:09',size:'10.1寸',res:'800*1280',status:'on',rotate:false},
+  {id:10,name:'大厅屏 10',mac:'AA:BB:CC:01:00:0A',size:'10.1寸',res:'800*1280',status:'on',rotate:false},
+  {id:11,name:'大厅屏 11',mac:'AA:BB:CC:01:00:0B',size:'10.1寸',res:'800*1280',status:'off',rotate:false},
+  {id:12,name:'大厅屏 12',mac:'AA:BB:CC:01:00:0C',size:'10.1寸',res:'800*1280',status:'on',rotate:false},
+  // 10.1寸旋转设备（不显示）
+  {id:13,name:'横屏设备 A',mac:'AA:BB:CC:01:90:01',size:'10.1寸',res:'800*1280',status:'on',rotate:true},
+  {id:14,name:'横屏设备 B',mac:'AA:BB:CC:01:90:02',size:'10.1寸',res:'1280*800',status:'on',rotate:false},
+  // 15.6寸
+  {id:21,name:'展示屏 01',mac:'AA:BB:CC:02:00:01',size:'15.6寸',res:'1920*1080',status:'on',rotate:false},
+  {id:22,name:'展示屏 02',mac:'AA:BB:CC:02:00:02',size:'15.6寸',res:'1920*1080',status:'on',rotate:false},
+  // 23.1寸
+  {id:23,name:'货架屏 01',mac:'AA:BB:CC:03:00:01',size:'23.1寸',res:'1920*1080',status:'on',rotate:false},
+  {id:24,name:'货架屏 02',mac:'AA:BB:CC:03:00:02',size:'23.1寸',res:'1920*1080',status:'off',rotate:false},
+  // 35寸
+  {id:25,name:'广告屏 01',mac:'AA:BB:CC:04:00:01',size:'35寸',res:'3840*2160',status:'on',rotate:false},
+  // 47.1寸
+  {id:26,name:'广告屏 02',mac:'AA:BB:CC:05:00:01',size:'47.1寸',res:'3840*2160',status:'on',rotate:false},
+  // 28.6寸
+  {id:27,name:'信息屏 01',mac:'AA:BB:CC:06:00:01',size:'28.6寸',res:'2560*1440',status:'on',rotate:false},
+  // 37.6寸
+  {id:28,name:'信息屏 02',mac:'AA:BB:CC:07:00:01',size:'37.6寸',res:'2560*1440',status:'off',rotate:false},
+  // 43.8寸
+  {id:29,name:'导购屏 01',mac:'AA:BB:CC:08:00:01',size:'43.8寸',res:'3840*1080',status:'on',rotate:false},
+  // 26.5寸
+  {id:30,name:'导购屏 02',mac:'AA:BB:CC:09:00:01',size:'26.5寸',res:'2560*1440',status:'on',rotate:false},
+  // 28.6寸旋转（不显示）
+  {id:31,name:'竖屏设备 C',mac:'AA:BB:CC:06:90:01',size:'28.6寸',res:'2560*1440',status:'on',rotate:true}
+];
+
+function renderTasks(){
+  const kw=(document.getElementById('searchInput')?.value||'').trim().toLowerCase();
+  const list=kw?tasks.filter(t=>t.name.toLowerCase().includes(kw)):tasks;
+  document.getElementById('taskGrid').innerHTML=list.map(t=>{
+    const stMap={edit:{t:'编辑中',b:'b-edit'},pending:{t:'待播放',b:'b-pending'},play:{t:'播放中',b:'b-play'},fail:{t:'播放失败',b:'b-fail'}};
+    const st=stMap[t.status]||{t:t.status,b:'b-edit'};
+    // 按钮矩阵：编辑中/播放失败=编辑+删除；待播放/播放中=仅结束
+    let actions='';
+    if(t.status==='edit'||t.status==='fail'){
+      actions=`<button class="btn btn-sm btn-ghost" onclick="editTask('${t.id}')">编辑</button>
+               <button class="btn btn-sm btn-ghost" onclick="deleteTask('${t.id}')">删除</button>`;
+    }else if(t.status==='pending'||t.status==='play'){
+      actions=`<button class="btn btn-sm btn-primary" onclick="finishTask('${t.id}')">结束任务</button>`;
+    }
+    return `<div class="task-card">
+      <div class="tc-thumb">
+        <span class="tc-badge ${st.b}">${st.t}</span>
+        <div class="ic">icon</div>
+      </div>
+      <div class="tc-body">
+        <div class="tc-name">${t.name}</div>
+        <div class="tc-fields">
+          <div class="tc-field"><span class="tf-key">设备</span><span class="tf-val">${t.devices} 台（${t.layout}）</span></div>
+          <div class="tc-field"><span class="tf-key">播放模式</span><span class="tf-val">${t.mode}</span></div>
+          <div class="tc-field"><span class="tf-key">视频名称</span><span class="tf-val">${t.video}</span></div>
+          <div class="tc-field"><span class="tf-key">设备尺寸</span><span class="tf-val">${t.model}</span></div>
+        </div>
+      </div>
+      <div class="tc-actions">${actions}</div>
+    </div>`;
+  }).join('');
+}
+function finishTask(id){
+  const t=tasks.find(x=>x.id===id);if(!t)return;
+  document.getElementById('finishName').textContent=t.name;
+  window.__finishId=id;
+  document.getElementById('finishModal').classList.add('show');
+}
+function confirmFinish(){
+  tasks=tasks.filter(x=>x.id!==window.__finishId);
+  document.getElementById('finishModal').classList.remove('show');
+  showToast('任务已结束，设备已解放');
+  renderTasks();
+}
+function deleteTask(id){
+  const t=tasks.find(x=>x.id===id);if(!t)return;
+  document.getElementById('delName').textContent=t.name;
+  window.__delId=id;
+  document.getElementById('delModal').classList.add('show');
+}
+function confirmDelete(){
+  tasks=tasks.filter(x=>x.id!==window.__delId);
+  document.getElementById('delModal').classList.remove('show');
+  showToast('任务已删除');
+  renderTasks();
+}
+function editTask(id){
+  const t=tasks.find(x=>x.id===id);if(!t)return;
+  editingId=id;
+  // 回填数据
+  document.getElementById('inName').value=t.name;
+  playMode=t.mode==='拼接播放'?'splice':'sync';
+  modeTouched=true; // 编辑回显已保存的模式，视为已确定（用户可再手动切换）
+  document.getElementById('mode-splice').classList.toggle('selected',playMode==='splice');
+  document.getElementById('mode-sync').classList.toggle('selected',playMode==='sync');
+  // 回填设备（模拟：按布局数量选前 N 台）
+  curDevices=allDevices.slice(0,t.devices);
+  // 回填布局（从 layout 解析行列）
+  if(t.layout && t.layout.includes('×')){
+    const [r,c]=t.layout.split('×').map(Number);
+    document.getElementById('inRows').value=r||2;
+    document.getElementById('inCols').value=c||3;
   }
-  var originalError = console.error;
-  console.error = function() {
-    emit("error", arguments);
-    return originalError && originalError.apply(console, arguments);
-  };
-  window.addEventListener("error", function(event) {
-    emit("error", [event.message || "Script error", event.filename || "", event.lineno || ""]);
-  });
-  window.addEventListener("unhandledrejection", function(event) {
-    emit("unhandledrejection", [event.reason || "Unhandled promise rejection"]);
-  });
-})();
-</script></body></html>
+  // 视频视为已传
+  videoUploaded=true;
+  document.getElementById('videoInfo').style.display='block';
+  document.getElementById('vi_name').textContent=t.video||'-';
+  document.getElementById('vi_dur').textContent='01:30';
+  document.getElementById('vi_res').textContent='1920×1080';
+  document.getElementById('vi_size').textContent='128 MB';
+  // 恢复步骤：编辑中任务恢复到 lastStep；播放失败任务恢复到第5步（完整配置过，可直接重新下发）
+  if(t.status==='fail'){
+    curStep=5; // 播放失败：回显完整配置，回到上传视频/下发步
+    videoUploaded=true;
+  }else{
+    curStep=t.lastStep||1;
+  }
+  goCreate();updateWizard();renderDevTable();renderWall();
+  showToast(`编辑「${t.name}」，已恢复到第 ${curStep} 步`);
+}
+function startCreate(isEdit){editingId=isEdit?editingId:null;curStep=1;videoUploaded=false;playMode='';modeTouched=false;document.getElementById('inName').value='';document.getElementById('mode-splice').classList.remove('selected');document.getElementById('mode-sync').classList.remove('selected');document.getElementById('videoInfo').style.display='none';if(!isEdit){pageNo=1;pageSize=10;document.getElementById('sizeFilter').value='10.1寸';}goCreate();updateWizard();renderDevTable();renderWall();}
+function goCreate(){document.getElementById('p-list').style.display='none';document.getElementById('p-create').style.display='block';document.getElementById('tbCrumb').textContent='/ 新建任务';}
+function goList(){document.getElementById('p-create').style.display='none';document.getElementById('p-list').style.display='block';document.getElementById('tbCrumb').textContent='';editingId=null;renderTasks();}
+function pickMode(m){playMode=m;modeTouched=true;document.getElementById('mode-splice').classList.toggle('selected',m==='splice');document.getElementById('mode-sync').classList.toggle('selected',m==='sync');}
+function getMaxStep(){return 5;}
+function updateWizard(){
+  // 进入播放模式步骤且用户未手动选择时，默认选中「拼接播放」
+  if(curStep===2 && !modeTouched){
+    playMode='splice';
+    document.getElementById('mode-splice').classList.add('selected');
+    document.getElementById('mode-sync').classList.remove('selected');
+  }
+  document.querySelector('.w-step[data-w="4"]').style.display=playMode==='sync'?'none':'';
+  document.querySelectorAll('.w-step').forEach(s=>{const n=+s.dataset.w;s.classList.toggle('active',n===curStep);s.classList.toggle('done',n<curStep);});
+  document.querySelectorAll('.w-pane').forEach(p=>p.classList.toggle('active',p.dataset.pane==curStep));
+  document.getElementById('btnNext').textContent=curStep<getMaxStep()?'下一步':'播放';
+  if(playMode==='sync'&&curStep===4){curStep=5;setTimeout(()=>updateWizard(),0);return;}
+  // 进入拼接布局步骤：按已选设备数动态推导默认行列并渲染
+  if(curStep===4 && playMode==='splice'){
+    ensureLayoutDefault();
+    renderWall();
+  }
+  updateIA();
+}
+function nextStep(){
+  if(curStep===1&&!document.getElementById('inName').value.trim()){showToast('请填写分组名称');return;}
+  if(curStep===2&&!playMode){showToast('请选择播放模式');return;}
+  if(curStep===3&&curDevices.length===0){showToast('请至少选择 1 台设备');return;}
+  if(curStep===4&&playMode==='splice'){const r=isRectLayout();if(!r.ok){showToast(r.msg);return;}}
+  if(playMode==='sync'&&curStep===3){curStep=5;updateWizard();return;}
+  if(curStep<getMaxStep()){curStep++;updateWizard();}else{finishCreate();}
+}
+function prevStep(){if(curStep>1){if(playMode==='sync'&&curStep===5){curStep=3;}else{curStep--;}updateWizard();}}
+function saveDraft(){
+  // 保存当前步骤进度：记录 lastStep 及当前步内容
+  const step=curStep;
+  let t=null;
+  if(editingId){ t=tasks.find(x=>x.id===editingId); }
+  else{ t={id:'t'+(tasks.length+1),name:'',status:'edit',lastStep:0}; tasks.push(t); }
+  // 更新内容
+  t.name=document.getElementById('inName').value.trim()||t.name;
+  if(playMode) t.mode=playMode==='splice'?'拼接播放':'同步播放';
+  if(curDevices.length) t.devices=curDevices.length;
+  if(curStep>=4&&playMode==='splice') t.layout=`${+document.getElementById('inRows').value}×${+document.getElementById('inCols').value}`;
+  if(videoUploaded) t.video='演示视频_1080P.mp4';
+  t.lastStep=step;
+  editingId=t.id;
+  renderTasks();
+  showToast(`已在第 ${step} 步保存草稿，编辑时将恢复到此处`);
+}
+/* 切换尺寸：清空 MAC 过滤，重置到第1页并刷新列表（不同尺寸的 MAC 段不同，跨尺寸保留过滤无意义） */
+function switchSize(){document.getElementById('macInput').value='';pageNo=1;renderDevTable();}
+/* 模拟后端接口：按所选尺寸返回已过滤设备列表（同尺寸同分辨率 + 排除旋转） */
+function getFilteredDevices(){
+  const selSize=document.getElementById('sizeFilter').value;
+  let list=allDevices.filter(d=>d.size===selSize && !d.rotate);
+  if(list.length>0){const r=list[0].res;list=list.filter(d=>d.res===r);}
+  return list;
+}
+/* 综合过滤：尺寸 + MAC 关键字；renderDevTable 与 goPage 共用，避免 totalPage 不一致 */
+function getFilteredList(){
+  const all=getFilteredDevices();
+  const kw=(document.getElementById('macInput')?.value||'').trim().toLowerCase();
+  return kw?all.filter(d=>d.mac.toLowerCase().includes(kw)):all;
+}
+/* 渲染后端返回的设备列表（按当前页切分；选中状态存 curDevices，跨页保留不清除） */
+function renderDevTable(){
+  const list=getFilteredList();
+  const totalPage=Math.max(1,Math.ceil(list.length/pageSize));
+  if(pageNo>totalPage) pageNo=totalPage;
+  if(pageNo<1) pageNo=1;
+  const pageList=list.slice((pageNo-1)*pageSize, pageNo*pageSize);
+  document.getElementById('devBody').innerHTML=pageList.map(d=>{
+    const sel=curDevices.some(x=>x.id===d.id);
+    return`<tr><td><input type="checkbox" class="chk" ${sel?'checked':''} onchange="toggleDev(${d.id},this.checked)"></td><td>${d.name}</td><td>${d.size}</td><td>${d.res}</td><td><span class="${d.status==='on'?'tag-online':'tag-offline'}">${d.status==='on'?'在线':'离线'}</span></td></tr>`;
+  }).join('');
+  renderPager(list.length,totalPage);
+  updateSelCount();
+}
+/* 渲染分页器：上一页/页码/下一页 + 每页条数 + 跳页 */
+function renderPager(total,totalPage){
+  let html=`<span class="pg" onclick="goPage(${pageNo-1})" style="${pageNo<=1?'pointer-events:none;opacity:.4':''}">‹</span>`;
+  for(let i=1;i<=totalPage;i++){
+    html+=`<span class="pg ${i===pageNo?'active':''}" onclick="goPage(${i})">${i}</span>`;
+  }
+  html+=`<span class="pg" onclick="goPage(${pageNo+1})" style="${pageNo>=totalPage?'pointer-events:none;opacity:.4':''}">›</span>`;
+  html+=`<select onchange="setPageSize(this.value)" style="border:1px solid #e0e4f0;border-radius:4px;padding:3px 6px;font-size:12px;background:#fff;margin-left:8px">
+    <option value="5" ${pageSize===5?'selected':''}>5条/页</option>
+    <option value="10" ${pageSize===10?'selected':''}>10条/页</option>
+    <option value="20" ${pageSize===20?'selected':''}>20条/页</option>
+  </select>`;
+  html+=`<span style="margin-left:8px">共 ${total} 条</span>`;
+  document.getElementById('pagerBox').innerHTML=html;
+}
+function goPage(p){
+  const totalPage=Math.max(1,Math.ceil(getFilteredList().length/pageSize));
+  if(p<1||p>totalPage)return;
+  pageNo=p;renderDevTable();
+}
+function setPageSize(v){pageSize=+v;pageNo=1;renderDevTable();}
+function toggleDev(id,checked){
+  if(checked){curDevices.push(allDevices.find(x=>x.id===id));}
+  else{curDevices=curDevices.filter(x=>x.id!==id);}
+  const set=new Set(curDevices.map(x=>x.size+'|'+x.res));
+  document.getElementById('devWarn').classList.toggle('show',set.size>1);
+  updateSelCount();
+  // 设备数量变化后，让行/列联动使乘积等于设备数（保持当前行数优先）
+  syncLayout('auto');
+}
+function updateSelCount(){document.getElementById('selCount').textContent=curDevices.length;}
+function isRectLayout(){
+  const rows=+document.getElementById('inRows').value||1,cols=+document.getElementById('inCols').value||1,n=curDevices.length,area=rows*cols;
+  if(n===0)return{ok:false,msg:'请先选择设备'};
+  if(area===n &&n%rows===0)return{ok:true};
+  if(rows===1&&cols===n)return{ok:true};
+  if(cols===1&&rows===n)return{ok:true};
+  const hint=suggestLayouts(n);
+  if(area!==n)return area>n?{ok:false,msg:`布局格子数 ${area}（${rows}×${cols}）多于 ${n} 台设备，建议改为：${hint||'—'}`}:{ok:false,msg:`布局格子数 ${area}（${rows}×${cols}）少于 ${n} 台设备，建议改为：${hint||'—'}`};
+  return{ok:false,msg:'设备数量与布局不匹配，请调整行数/列数'};
+}
+/* autoLayout：根据设备数推导最接近正方形的行×列；质数则单行排开 */
+function autoLayout(n){
+  if(n<=0) return {rows:1,cols:1};
+  for(let r=Math.floor(Math.sqrt(n));r>=1;r--){
+    if(n%r===0){return {rows:r,cols:n/r};}
+  }
+  return {rows:1,cols:n}; // 质数：单行
+}
+/* 进入拼接布局时：若当前行列乘积≠设备数，自动按已选设备数推导默认行列 */
+function ensureLayoutDefault(){
+  const n=curDevices.length;
+  if(n===0)return;
+  const rowsEl=document.getElementById('inRows');
+  const colsEl=document.getElementById('inCols');
+  const rows=+rowsEl.value,cols=+colsEl.value;
+  if(rows*cols!==n){
+    const d=autoLayout(n);
+    rowsEl.value=d.rows;
+    colsEl.value=d.cols;
+  }
+}
+/* 计算所有可用的布局组合（如 6 → 1×6 / 2×3 / 3×2 / 6×1） */
+function suggestLayouts(n){
+  const layouts=[];
+  if(n<=0) return '';
+  for(let r=1;r<=Math.min(n,6);r++){
+    if(n%r===0 && n/r<=6) layouts.push(`${r}×${n/r}`);
+  }
+  return layouts.join(' / ');
+}
+/* 行/列输入时联动：让另一边自动适配，使 乘积 = 设备数（限制：行列均1~6） */
+function syncLayout(field){
+  const n=curDevices.length;
+  const rowsEl=document.getElementById('inRows');
+  const colsEl=document.getElementById('inCols');
+  let rows=Math.max(1,Math.min(6,+rowsEl.value||1));
+  let cols=Math.max(1,Math.min(6,+colsEl.value||1));
+  if(n>0){
+    if(field==='rows'){
+      // 行变了：若能整除，自动让列 = n/rows
+      if(n%rows===0){cols=n/rows;colsEl.value=cols;}
+    }else if(field==='cols'){
+      // 列变了：若能整除，自动让行 = n/cols
+      if(n%cols===0){rows=n/cols;rowsEl.value=rows;}
+    }else if(field==='auto'){
+      // 设备变化：保持当前行数优先，让列自动调整；否则按 autoLayout 推导
+      if(n%rows===0){cols=n/rows;colsEl.value=cols;}
+      else if(n%cols===0){rows=n/cols;rowsEl.value=rows;}
+      else{const d=autoLayout(n);rowsEl.value=d.rows;colsEl.value=d.cols;}
+    }
+  }
+  rowsEl.value=rows;
+  colsEl.value=cols;
+  updateLayoutHint();
+  renderWall();
+}
+/* 更新顶部提示与警告 */
+function updateLayoutHint(){
+  const n=curDevices.length;
+  const rows=+document.getElementById('inRows').value||1;
+  const cols=+document.getElementById('inCols').value||1;
+  const area=rows*cols;
+  document.getElementById('wallCount').textContent=n;
+  document.getElementById('layoutOptions').textContent=n>0?suggestLayouts(n):'—';
+  const warnEl=document.getElementById('layoutWarn');
+  if(n===0){
+    warnEl.classList.remove('show');
+    document.getElementById('inRows').classList.remove('invalid');
+    document.getElementById('inCols').classList.remove('invalid');
+    return;
+  }
+  const valid=area===n;
+  warnEl.classList.toggle('show',!valid);
+  warnEl.textContent=valid?'⚠️ 行×列 必须等于 已选设备数，否则无法保存':`⚠️ 当前 ${rows}×${cols}=${area} 与设备数 ${n} 不匹配，请调整为：${suggestLayouts(n)}`;
+  document.getElementById('inRows').classList.toggle('invalid',!valid);
+  document.getElementById('inCols').classList.toggle('invalid',!valid);
+}
+/* 拖动源索引（用于交换 curDevices 中两个位置） */
+let dragSrcIdx=null;
+function dragStart(e,i){
+  if(!curDevices[i]){e.preventDefault();return;}
+  // 布局不匹配时禁止拖动
+  if(isLayoutLocked()){e.preventDefault();showToast('布局与设备数不匹配，请先调整行数/列数');return;}
+  dragSrcIdx=i;
+  e.dataTransfer.effectAllowed='move';
+  e.dataTransfer.setData('text/plain',String(i));
+  e.currentTarget.classList.add('dragging');
+}
+function isLayoutLocked(){
+  const rows=+document.getElementById('inRows').value||1;
+  const cols=+document.getElementById('inCols').value||1;
+  const n=curDevices.length;
+  return n>0 && rows*cols!==n;
+}
+function dragOver(e){
+  if(isLayoutLocked()){e.dataTransfer.dropEffect='none';return;}
+  e.preventDefault();e.dataTransfer.dropEffect='move';
+}
+function dragEnter(e){if(isLayoutLocked())return;const c=e.target.closest('.wall-cell');if(c)c.classList.add('drag-over');}
+function dragLeave(e){const c=e.target.closest('.wall-cell');if(c&&e.relatedTarget&&!c.contains(e.relatedTarget))c.classList.remove('drag-over');}
+function dragEnd(e){e.currentTarget.classList.remove('dragging');document.querySelectorAll('.wall-cell.drag-over').forEach(n=>n.classList.remove('drag-over'));}
+function dragDrop(e,i){
+  e.preventDefault();
+  const c=e.target.closest('.wall-cell');if(c)c.classList.remove('drag-over');
+  if(dragSrcIdx===null||dragSrcIdx===i){dragSrcIdx=null;return;}
+  // 交换两个位置上的设备
+  const tmp=curDevices[dragSrcIdx];
+  curDevices[dragSrcIdx]=curDevices[i];
+  curDevices[i]=tmp;
+  dragSrcIdx=null;
+  renderWall();
+}
+function renderWall(){
+  const rows=+document.getElementById('inRows').value||2,cols=+document.getElementById('inCols').value||3;
+  const n=curDevices.length;
+  updateLayoutHint();
+  const wall=document.getElementById('wallPreview');
+  wall.style.gridTemplateColumns=`repeat(${cols},1fr)`;
+  const locked=n>0 && rows*cols!==n; // 布局不匹配时锁定拖动
+  wall.classList.toggle('invalid',locked);
+  let html='';
+  for(let i=0;i<rows*cols;i++){
+    const dev=curDevices[i];
+    if(dev){
+      const tip=`${dev.name}\nMAC：${dev.mac}\n尺寸：${dev.size}\n分辨率：${dev.res}`;
+      const dragAttrs=locked?'':'draggable="true" ondragstart="dragStart(event,'+i+')" ondragend="dragEnd(event)"';
+      const dropAttrs=locked?'':'ondragover="dragOver(event)" ondragenter="dragEnter(event)" ondragleave="dragLeave(event)" ondrop="dragDrop(event,'+i+')"';
+      html+=`<div class="wall-cell filled${locked?' locked':''}" ${dragAttrs} ${dropAttrs} data-i="${i}" title="${tip}">
+        <div class="wc-name">${dev.name}</div>
+        <div class="wc-mac">${dev.mac}</div>
+      </div>`;
+    }else{
+      const dropAttrs=locked?'':'ondragover="dragOver(event)" ondragenter="dragEnter(event)" ondragleave="dragLeave(event)" ondrop="dragDrop(event,'+i+')"';
+      html+=`<div class="wall-cell empty${locked?' locked':''}" ${dropAttrs} data-i="${i}">
+        <span>待分配</span>
+      </div>`;
+    }
+  }
+  wall.innerHTML=html;
+}
+function uploadVideo(){videoUploaded=true;showToast('已选择视频');const vi=document.getElementById('videoInfo');vi.style.display='block';document.getElementById('vi_name').textContent='演示视频_1080P.mp4';document.getElementById('vi_dur').textContent='01:30';document.getElementById('vi_res').textContent='1920×1080';document.getElementById('vi_size').textContent='128 MB';}
+function finishCreate(){
+  if(!videoUploaded){showToast('请先上传视频');return;}
+  const name=document.getElementById('inName').value.trim();
+  const modeTxt=playMode==='splice'?'拼接播放':'同步播放';
+  const layout=playMode==='splice'?`${+document.getElementById('inRows').value}×${+document.getElementById('inCols').value}`:'1×'+curDevices.length;
+  if(editingId){
+    // 编辑模式：更新原任务
+    const t=tasks.find(x=>x.id===editingId);
+    if(t){
+      t.name=name;t.mode=modeTxt;t.layout=layout;t.devices=curDevices.length;t.video='演示视频_1080P.mp4';t.model='10.1寸LCD设备 800*1280';
+      // 播放失败任务编辑后点「播放」：重新下发，状态转「待播放」
+      if(t.status==='fail'){
+        t.status='pending';
+        document.getElementById('doneBody').innerHTML=`任务「${name}」已保存并重新下发<br>模式：${modeTxt}<br>设备：${curDevices.length} 台（${layout}）<br>状态：待播放`;
+        showToast('已重新下发，等待设备播放');
+      }else{
+        document.getElementById('doneBody').innerHTML=`任务「${name}」已保存<br>模式：${modeTxt}<br>设备：${curDevices.length} 台（${layout}）`;
+        showToast('编辑已保存');
+      }
+    }
+  }else{
+    // 新建模式：新增任务
+    tasks.push({id:'t'+(tasks.length+1),name:name,icon:'icon',status:'edit',devices:curDevices.length,layout:layout,mode:modeTxt,video:'演示视频_1080P.mp4',model:'10.1寸LCD设备 800*1280'});
+    document.getElementById('doneBody').innerHTML=`任务「${name}」已创建<br>模式：${modeTxt}<br>设备：${curDevices.length} 台（${layout}）<br>已开始自动循环播放`;
+  }
+  document.getElementById('doneModal').classList.add('show');
+}
+function closeModal(id){document.getElementById(id).classList.remove('show');}
+function showToast(msg){const t=document.createElement('div');t.className='toast';t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2000);}
+function toggleIA(){
+  const p=document.getElementById('iaPanel'),b=document.getElementById('iaToggle');
+  const show=!p.classList.contains('show');
+  p.classList.toggle('show');
+  document.body.classList.toggle('ia-open',show);
+  b.textContent=show?'✕ 收起':'📄 交互说明';
+  updateIA();
+}
+function currentPageKey(){
+  return document.getElementById('p-list').style.display!='none'?'list':'step'+curStep;
+}
+function updateIA(){
+  document.getElementById('iaBody').innerHTML=iaContent[currentPageKey()]||iaContent.list;
+}
+const iaContent={
+list:`<h3>一、功能定位</h3>
+<ul><li>把多台 <b>LCD 显示屏</b>（同型号同分辨率）组织成投放任务，统一播放视频。</li>
+<li>支持 <b>拼接播放</b>（N台拼成一个大画面）与 <b>同步播放</b>（每台完整播放同一视频）。</li>
+<li>一个任务二选一；任务个数不限。</li></ul>
+<h3>二、任务状态解释</h3>
+<div class="st-item"><b style="color:#e6a23c">■ 编辑中</b><br>
+任务刚建立，正在配置，<b>未下发到设备</b>。<br>
+· 含义：可随时临时保存（草稿），尚未真正播放。<br>
+· 设备：未参与播放。<br>
+· 操作：可<b>编辑</b>（恢复上次保存步骤）、可<b>删除</b>（删表单，设备无影响）。</div>
+<div class="st-item"><b style="color:#5b7cfa">■ 待播放</b><br>
+任务已<b>下发</b>，设备正在异步处理中，<b>尚未真正开始播放</b>。<br>
+· 含义：处于「已提交但设备响应中」的中间态。<br>
+· 设备：已被分组占用，准备播放。<br>
+· 操作：仅可<b>结束</b>（停止下发，释放设备）；<b>不可编辑、不可删除</b>（已下发）。</div>
+<div class="st-item"><b style="color:#1c9d5f">■ 播放中</b><br>
+设备<b>播放成功</b>，正在正常循环播放。<br>
+· 含义：任务执行成功，设备在显示内容。<br>
+· 设备：正在播放视频，占用分组。<br>
+· 操作：仅可<b>结束</b>（停止播放，释放设备）；<b>不可编辑、不可删除</b>。</div>
+<div class="st-item"><b style="color:#e0574b">■ 播放失败</b><br>
+任务下发或播放过程中<b>出错失败</b>。<br>
+· 含义：已下发但未能正常播放，设备可重新调整后重试。<br>
+· 设备：播放异常，未正常占用。<br>
+· 操作：可<b>编辑</b>（修改后重新下发）、可<b>删除</b>（清理异常任务）。</div>
+<div class="note"><b>状态流转</b>：编辑中 ─保存下发→ 待播放 ─设备响应→ 播放中 / 播放失败<br>
+<b>删除</b>=删任务表单（设备未播放）；<b>结束</b>=结束设备播放，设备从分组解放（任务移除）。</div>
+<div class="note"><b>可编辑范围</b>：仅「编辑中」与「播放失败」任务可编辑；「待播放」「播放中」不可编辑。</div>
+<h3>编辑按钮 · 两类任务逻辑区别</h3>
+<table>
+<tr><th>任务类型</th><th>进入后所处步骤</th><th>回显内容</th><th>说明</th></tr>
+<tr><td>编辑中<br>（lastStep=N）</td><td>恢复到第 N 步</td><td>回显 1~N 步已保存内容</td><td>恢复到上次保存处，继续未完成编辑</td></tr>
+<tr><td>播放失败<br>（已完整配置下发）</td><td>恢复到第 5 步<br>（上传视频/下发步）</td><td>回显全部已配置内容</td><td>完整配置过，直接到末步便于重新下发</td></tr>
+</table>
+<div class="note"><b>播放失败重下发</b>：改完后点「播放」→ 状态由「播放失败」转「待播放」重新下发。<br><b>编辑中保存</b>：点「保存」→ 记录 lastStep，任务保持「编辑中」。</div>
+<div class="note"><b>卡片样式</b>：无编辑态边框，各状态通过徽章区分。</div>
+<h3>四、列表交互</h3>
+<ul><li><b>搜索</b>：按任务名称实时过滤。</li>
+<li><b>新建任务</b>：进入 5 步创建向导。</li>
+<li><b>编辑</b>：进入向导，恢复保存进度。</li></ul>`,
+step1:`<h3>步骤 1 · 基本信息</h3>
+<ul><li><b>分组名称</b>：必填，命名任务。</li>
+<li><b>字符限制</b>：<b>50 字符以内</b>，超出无法输入。</li>
+<li><b>底部按钮</b>：上一步 / 保存 / 下一步。</li>
+<li>校验：名称为空时提示并阻止下一步。</li>
+<li><b>进度记忆</b>：<b>不点「保存」不记录任何步骤进度</b>；点「保存」后才保存当前步骤及后续操作，任务进入编辑中。</li></ul>
+<div class="note">「下一步」仅跳转，不保存进度；必须点「保存」才记录当前步骤为续编点。</div>`,
+step2:`<h3>步骤 2 · 播放模式</h3>
+<ul><li><b>拼接播放</b>：N台拼成一个大画面，每台显示视频一部分。</li>
+<li><b>同步播放</b>：每台完整播放同一视频。</li>
+<li><b>默认选中</b>：进入本步自动选中「拼接播放」。</li>
+<li><b>交互</b>：点击卡片切换选中（蓝色描边），二选一。</li>
+<li><b>进度记忆</b>：<b>不点「保存」不记录本步选择</b>；点「保存」后才记住当前播放模式。</li></ul>
+<div class="note">新建默认拼接；编辑时回显已保存模式（可再手动切换）。</div>`,
+step3:`<h3>步骤 3 · 选择设备</h3>
+<ul><li><b>尺寸下拉</b>：选项为 10.1寸/15.6寸/23.1寸/35寸/47.1寸/28.6寸/37.6寸/43.8寸/26.5寸，<b>默认选中 10.1寸</b>。</li>
+<li><b>设备列表</b>：仅展示与所选尺寸匹配（同尺寸同分辨率）的设备，<b>旋转设备不显示</b>。</li>
+<li><b>设备表格</b>：勾选设备，显示名称/尺寸/分辨率/状态（在线绿/离线灰）。</li>
+<li><b>搜索 MAC</b>：在当前列表内按 MAC 过滤。</li>
+<li><b>分页器</b>：页码 + 每页条数 + 共 N 条，切换尺寸回到第 1 页。</li>
+<li><b>跨页选中保留</b>：分页/翻页后，<b>已勾选设备保持选中不清除</b>；回到之前页仍显示勾选态。</li></ul>
+<div class="note"><b>跨页选中</b>：选中状态独立保存，翻页或切换每页条数均不丢失；用户可跨页多选设备后统一进入布局。</div>
+`,
+step4:`<h3>步骤 4 · 拼接布局（仅拼接模式）</h3>
+<ul><li><b>动态默认排列</b>：进入本步时，系统按<b>已选设备数</b>自动推导默认行×列，无需手动设置。</li>
+<li><b>推导算法</b>：在 ⌊√设备数⌋ 至 1 间取第一个能整除设备数的行数，得到接近正方形的排列；<b>质数设备数则自动按单行</b>（1×N）排开。</li>
+<li><b>示例</b>：6台→2×3、8台→2×4、9台→3×3、12台→3×4、7台(质数)→1×7。</li>
+<li><b>手动调整</b>：可修改行数/列数实时预览。</li>
+<li><b>共 N 台设备</b>：显示行×列。</li>
+<li><b>校验</b>：行×列=已选设备数，否则阻止下一步并提示差额。</li>
+<li><b>跳过</b>：同步模式跳过此步。</li></ul>
+<div class="note">设备数≠行×列时提示差额并阻止下一步；编辑回显已保存布局，用户手动调整不覆盖。</div>`,
+step5:`<h3>步骤 5 · 上传视频</h3>
+<ul><li><b>上传区</b>：点击上传视频。</li>
+<li><b>提示</b>：支持MP4，建议分辨率与拼接墙总分辨率一致。</li>
+<li><b>上传成功</b>：展示视频名称/时长/分辨率/大小。</li>
+<li><b>提交</b>：点「播放」开始循环播放。</li></ul>
+<div class="note">未上传视频时点「播放」会校验提示。</div>`
+};
+renderTasks();renderDevTable();renderWall();updateIA();
+</script>
+</body>
+</html>
