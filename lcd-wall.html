@@ -110,10 +110,25 @@ body{background:#f0f2f7;color:#222;display:flex;min-height:100vh}
 /* 拼接布局 */
 .layout-ctrl{display:flex;align-items:center;gap:30px;margin-bottom:20px}
 .layout-ctrl .lc-item{display:flex;align-items:center;gap:8px;font-size:13px;color:#333}
-.layout-ctrl input[type="number"]{width:50px;border:1px solid #e0e4f0;border-radius:6px;padding:5px 8px;text-align:center;font-size:13px;outline:none}
+.layout-ctrl input[type="number"]{width:50px;border:1px solid #e0e4f0;border-radius:6px;padding:5px 8px;text-align:center;font-size:13px;outline:none;background:#fff}
+.layout-ctrl input[type="number"].invalid{border-color:#f56c6c;background:#fff5f6}
 .layout-ctrl .lc-hint{font-size:13px;color:#666}
+.layout-ctrl .lc-hint #layoutOptions{color:#5b7cfa;font-family:Menlo,Consolas,monospace;letter-spacing:.3px}
+.layout-warn{background:#fff5f6;border:1px solid #ffd5d8;border-radius:6px;padding:8px 12px;font-size:12px;color:#e64545;display:none;margin-bottom:14px}
+.layout-warn.show{display:block}
 .wall-preview{background:#c9cfdd;border-radius:10px;padding:20px;display:grid;gap:14px;margin:0 80px}
-.wall-cell{background:#fff;border-radius:6px;height:120px;display:flex;align-items:center;justify-content:center;color:#c9cfdd;font-size:11px}
+.wall-preview.invalid{background:#ffe9e6;outline:2px dashed #f56c6c;outline-offset:-6px}
+.wall-preview.invalid .wall-cell{opacity:.7;cursor:not-allowed!important;filter:grayscale(.5)}
+.wall-preview.invalid .wall-cell.filled{cursor:not-allowed!important}
+.wall-preview.invalid::after{content:'🔒 布局锁定：请先调整行/列使乘积等于设备数';display:block;grid-column:1/-1;text-align:center;color:#e64545;font-size:13px;padding:8px;background:#fff5f6;border-radius:6px;margin-top:6px}
+.wall-cell{background:#fff;border-radius:6px;height:120px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#c9cfdd;font-size:11px;transition:transform .15s,box-shadow .15s,border-color .15s;padding:6px 8px;overflow:hidden}
+.wall-cell.filled{cursor:move;color:#333;font-size:12px}
+.wall-cell.filled:hover{box-shadow:0 4px 14px rgba(91,124,250,.25);transform:translateY(-2px)}
+.wall-cell.empty{cursor:default}
+.wall-cell.dragging{opacity:.35;transform:scale(.97)}
+.wall-cell.drag-over{background:#eef2ff;border:2px dashed #5b7cfa;box-sizing:border-box}
+.wall-cell .wc-name{font-weight:600;color:#222;font-size:12px;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.wall-cell .wc-mac{font-size:10px;color:#888;font-family:Menlo,Consolas,'Courier New',monospace;letter-spacing:0;white-space:nowrap}
 /* 上传视频 */
 .upload-zone{background:#eef2ff;border-radius:10px;padding:60px 30px;text-align:center;margin-bottom:24px}
 .upload-zone .uz-ic{width:90px;height:60px;border:1px solid #c9cfdd;border-radius:6px;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;color:#9aa3b5;font-size:11px}
@@ -233,7 +248,7 @@ body{background:#f0f2f7;color:#222;display:flex;min-height:100vh}
                   <option value="43.8寸">43.8寸</option>
                   <option value="26.5寸">26.5寸</option>
                 </select>
-                <div class="search"><input placeholder="请输入mac"></div>
+                <div class="search"><input id="macInput" placeholder="请输入mac" oninput="renderDevTable()"></div>
                 <div class="count">已选 <b id="selCount">0</b>台</div>
               </div>
               <div class="dev-warn" id="devWarn">⚠️ 只能选择同型号、同分辨率的 LCD 设备，请移除不同型号设备</div>
@@ -249,10 +264,11 @@ body{background:#f0f2f7;color:#222;display:flex;min-height:100vh}
             <div class="w-card">
               <div class="wc-tit">拼接布局 <span class="sub">视频按你的排列切分</span></div>
               <div class="layout-ctrl">
-                <div class="lc-item">行数 <input id="inRows" type="number" min="1" max="6" value="2" onchange="renderWall()"></div>
-                <div class="lc-item">列数 <input id="inCols" type="number" min="1" max="6" value="3" onchange="renderWall()"></div>
-                <div class="lc-hint">共 <b id="wallCount">6</b> 台设备</div>
+                <div class="lc-item">行数 <input id="inRows" type="number" min="1" max="6" value="2" oninput="syncLayout('rows')"></div>
+                <div class="lc-item">列数 <input id="inCols" type="number" min="1" max="6" value="3" oninput="syncLayout('cols')"></div>
+                <div class="lc-hint"><b id="wallCount">6</b> 台设备，可布局为 <span id="layoutOptions">—</span></div>
               </div>
+              <div class="layout-warn" id="layoutWarn">⚠️ 行×列 必须等于 已选设备数，否则无法保存</div>
               <div id="wallPreview" class="wall-preview"></div>
             </div>
           </div>
@@ -331,41 +347,41 @@ let pageNo=1,pageSize=10; // 分页状态
 
 const allDevices=[
   // 10.1寸（默认选中，竖屏，12台便于演示跨页）
-  {id:1,name:'大厅屏 01',size:'10.1寸',res:'800*1280',status:'on',rotate:false},
-  {id:2,name:'大厅屏 02',size:'10.1寸',res:'800*1280',status:'on',rotate:false},
-  {id:3,name:'大厅屏 03',size:'10.1寸',res:'800*1280',status:'on',rotate:false},
-  {id:4,name:'大厅屏 04',size:'10.1寸',res:'800*1280',status:'off',rotate:false},
-  {id:5,name:'大厅屏 05',size:'10.1寸',res:'800*1280',status:'on',rotate:false},
-  {id:6,name:'大厅屏 06',size:'10.1寸',res:'800*1280',status:'on',rotate:false},
-  {id:7,name:'大厅屏 07',size:'10.1寸',res:'800*1280',status:'on',rotate:false},
-  {id:8,name:'大厅屏 08',size:'10.1寸',res:'800*1280',status:'on',rotate:false},
-  {id:9,name:'大厅屏 09',size:'10.1寸',res:'800*1280',status:'on',rotate:false},
-  {id:10,name:'大厅屏 10',size:'10.1寸',res:'800*1280',status:'on',rotate:false},
-  {id:11,name:'大厅屏 11',size:'10.1寸',res:'800*1280',status:'off',rotate:false},
-  {id:12,name:'大厅屏 12',size:'10.1寸',res:'800*1280',status:'on',rotate:false},
+  {id:1,name:'大厅屏 01',mac:'AA:BB:CC:01:00:01',size:'10.1寸',res:'800*1280',status:'on',rotate:false},
+  {id:2,name:'大厅屏 02',mac:'AA:BB:CC:01:00:02',size:'10.1寸',res:'800*1280',status:'on',rotate:false},
+  {id:3,name:'大厅屏 03',mac:'AA:BB:CC:01:00:03',size:'10.1寸',res:'800*1280',status:'on',rotate:false},
+  {id:4,name:'大厅屏 04',mac:'AA:BB:CC:01:00:04',size:'10.1寸',res:'800*1280',status:'off',rotate:false},
+  {id:5,name:'大厅屏 05',mac:'AA:BB:CC:01:00:05',size:'10.1寸',res:'800*1280',status:'on',rotate:false},
+  {id:6,name:'大厅屏 06',mac:'AA:BB:CC:01:00:06',size:'10.1寸',res:'800*1280',status:'on',rotate:false},
+  {id:7,name:'大厅屏 07',mac:'AA:BB:CC:01:00:07',size:'10.1寸',res:'800*1280',status:'on',rotate:false},
+  {id:8,name:'大厅屏 08',mac:'AA:BB:CC:01:00:08',size:'10.1寸',res:'800*1280',status:'on',rotate:false},
+  {id:9,name:'大厅屏 09',mac:'AA:BB:CC:01:00:09',size:'10.1寸',res:'800*1280',status:'on',rotate:false},
+  {id:10,name:'大厅屏 10',mac:'AA:BB:CC:01:00:0A',size:'10.1寸',res:'800*1280',status:'on',rotate:false},
+  {id:11,name:'大厅屏 11',mac:'AA:BB:CC:01:00:0B',size:'10.1寸',res:'800*1280',status:'off',rotate:false},
+  {id:12,name:'大厅屏 12',mac:'AA:BB:CC:01:00:0C',size:'10.1寸',res:'800*1280',status:'on',rotate:false},
   // 10.1寸旋转设备（不显示）
-  {id:13,name:'横屏设备 A',size:'10.1寸',res:'800*1280',status:'on',rotate:true},
-  {id:14,name:'横屏设备 B',size:'10.1寸',res:'1280*800',status:'on',rotate:false},
+  {id:13,name:'横屏设备 A',mac:'AA:BB:CC:01:90:01',size:'10.1寸',res:'800*1280',status:'on',rotate:true},
+  {id:14,name:'横屏设备 B',mac:'AA:BB:CC:01:90:02',size:'10.1寸',res:'1280*800',status:'on',rotate:false},
   // 15.6寸
-  {id:21,name:'展示屏 01',size:'15.6寸',res:'1920*1080',status:'on',rotate:false},
-  {id:22,name:'展示屏 02',size:'15.6寸',res:'1920*1080',status:'on',rotate:false},
+  {id:21,name:'展示屏 01',mac:'AA:BB:CC:02:00:01',size:'15.6寸',res:'1920*1080',status:'on',rotate:false},
+  {id:22,name:'展示屏 02',mac:'AA:BB:CC:02:00:02',size:'15.6寸',res:'1920*1080',status:'on',rotate:false},
   // 23.1寸
-  {id:23,name:'货架屏 01',size:'23.1寸',res:'1920*1080',status:'on',rotate:false},
-  {id:24,name:'货架屏 02',size:'23.1寸',res:'1920*1080',status:'off',rotate:false},
+  {id:23,name:'货架屏 01',mac:'AA:BB:CC:03:00:01',size:'23.1寸',res:'1920*1080',status:'on',rotate:false},
+  {id:24,name:'货架屏 02',mac:'AA:BB:CC:03:00:02',size:'23.1寸',res:'1920*1080',status:'off',rotate:false},
   // 35寸
-  {id:25,name:'广告屏 01',size:'35寸',res:'3840*2160',status:'on',rotate:false},
+  {id:25,name:'广告屏 01',mac:'AA:BB:CC:04:00:01',size:'35寸',res:'3840*2160',status:'on',rotate:false},
   // 47.1寸
-  {id:26,name:'广告屏 02',size:'47.1寸',res:'3840*2160',status:'on',rotate:false},
+  {id:26,name:'广告屏 02',mac:'AA:BB:CC:05:00:01',size:'47.1寸',res:'3840*2160',status:'on',rotate:false},
   // 28.6寸
-  {id:27,name:'信息屏 01',size:'28.6寸',res:'2560*1440',status:'on',rotate:false},
+  {id:27,name:'信息屏 01',mac:'AA:BB:CC:06:00:01',size:'28.6寸',res:'2560*1440',status:'on',rotate:false},
   // 37.6寸
-  {id:28,name:'信息屏 02',size:'37.6寸',res:'2560*1440',status:'off',rotate:false},
+  {id:28,name:'信息屏 02',mac:'AA:BB:CC:07:00:01',size:'37.6寸',res:'2560*1440',status:'off',rotate:false},
   // 43.8寸
-  {id:29,name:'导购屏 01',size:'43.8寸',res:'3840*1080',status:'on',rotate:false},
+  {id:29,name:'导购屏 01',mac:'AA:BB:CC:08:00:01',size:'43.8寸',res:'3840*1080',status:'on',rotate:false},
   // 26.5寸
-  {id:30,name:'导购屏 02',size:'26.5寸',res:'2560*1440',status:'on',rotate:false},
+  {id:30,name:'导购屏 02',mac:'AA:BB:CC:09:00:01',size:'26.5寸',res:'2560*1440',status:'on',rotate:false},
   // 28.6寸旋转（不显示）
-  {id:31,name:'竖屏设备 C',size:'28.6寸',res:'2560*1440',status:'on',rotate:true}
+  {id:31,name:'竖屏设备 C',mac:'AA:BB:CC:06:90:01',size:'28.6寸',res:'2560*1440',status:'on',rotate:true}
 ];
 
 function renderTasks(){
@@ -508,8 +524,8 @@ function saveDraft(){
   renderTasks();
   showToast(`已在第 ${step} 步保存草稿，编辑时将恢复到此处`);
 }
-/* 切换尺寸：重置到第1页并刷新列表 */
-function switchSize(){pageNo=1;renderDevTable();}
+/* 切换尺寸：清空 MAC 过滤，重置到第1页并刷新列表（不同尺寸的 MAC 段不同，跨尺寸保留过滤无意义） */
+function switchSize(){document.getElementById('macInput').value='';pageNo=1;renderDevTable();}
 /* 模拟后端接口：按所选尺寸返回已过滤设备列表（同尺寸同分辨率 + 排除旋转） */
 function getFilteredDevices(){
   const selSize=document.getElementById('sizeFilter').value;
@@ -517,17 +533,24 @@ function getFilteredDevices(){
   if(list.length>0){const r=list[0].res;list=list.filter(d=>d.res===r);}
   return list;
 }
+/* 综合过滤：尺寸 + MAC 关键字；renderDevTable 与 goPage 共用，避免 totalPage 不一致 */
+function getFilteredList(){
+  const all=getFilteredDevices();
+  const kw=(document.getElementById('macInput')?.value||'').trim().toLowerCase();
+  return kw?all.filter(d=>d.mac.toLowerCase().includes(kw)):all;
+}
 /* 渲染后端返回的设备列表（按当前页切分；选中状态存 curDevices，跨页保留不清除） */
 function renderDevTable(){
-  const all=getFilteredDevices();
-  const totalPage=Math.max(1,Math.ceil(all.length/pageSize));
+  const list=getFilteredList();
+  const totalPage=Math.max(1,Math.ceil(list.length/pageSize));
   if(pageNo>totalPage) pageNo=totalPage;
-  const pageList=all.slice((pageNo-1)*pageSize, pageNo*pageSize);
+  if(pageNo<1) pageNo=1;
+  const pageList=list.slice((pageNo-1)*pageSize, pageNo*pageSize);
   document.getElementById('devBody').innerHTML=pageList.map(d=>{
     const sel=curDevices.some(x=>x.id===d.id);
     return`<tr><td><input type="checkbox" class="chk" ${sel?'checked':''} onchange="toggleDev(${d.id},this.checked)"></td><td>${d.name}</td><td>${d.size}</td><td>${d.res}</td><td><span class="${d.status==='on'?'tag-online':'tag-offline'}">${d.status==='on'?'在线':'离线'}</span></td></tr>`;
   }).join('');
-  renderPager(all.length,totalPage);
+  renderPager(list.length,totalPage);
   updateSelCount();
 }
 /* 渲染分页器：上一页/页码/下一页 + 每页条数 + 跳页 */
@@ -546,12 +569,20 @@ function renderPager(total,totalPage){
   document.getElementById('pagerBox').innerHTML=html;
 }
 function goPage(p){
-  const totalPage=Math.max(1,Math.ceil(getFilteredDevices().length/pageSize));
+  const totalPage=Math.max(1,Math.ceil(getFilteredList().length/pageSize));
   if(p<1||p>totalPage)return;
   pageNo=p;renderDevTable();
 }
 function setPageSize(v){pageSize=+v;pageNo=1;renderDevTable();}
-function toggleDev(id,checked){if(checked){curDevices.push(allDevices.find(x=>x.id===id));}else{curDevices=curDevices.filter(x=>x.id!==id);}const set=new Set(curDevices.map(x=>x.size+'|'+x.res));document.getElementById('devWarn').classList.toggle('show',set.size>1);updateSelCount();renderWall();}
+function toggleDev(id,checked){
+  if(checked){curDevices.push(allDevices.find(x=>x.id===id));}
+  else{curDevices=curDevices.filter(x=>x.id!==id);}
+  const set=new Set(curDevices.map(x=>x.size+'|'+x.res));
+  document.getElementById('devWarn').classList.toggle('show',set.size>1);
+  updateSelCount();
+  // 设备数量变化后，让行/列联动使乘积等于设备数（保持当前行数优先）
+  syncLayout('auto');
+}
 function updateSelCount(){document.getElementById('selCount').textContent=curDevices.length;}
 function isRectLayout(){
   const rows=+document.getElementById('inRows').value||1,cols=+document.getElementById('inCols').value||1,n=curDevices.length,area=rows*cols;
@@ -559,7 +590,8 @@ function isRectLayout(){
   if(area===n &&n%rows===0)return{ok:true};
   if(rows===1&&cols===n)return{ok:true};
   if(cols===1&&rows===n)return{ok:true};
-  if(area!==n)return area>n?{ok:false,msg:`布局中设备数量（${area}）大于已选设备数（${n}），请减少行数/列数或补充设备`}:{ok:false,msg:`布局中设备数量（${area}）小于已选设备数（${n}），请增加行数/列数或减少设备`};
+  const hint=suggestLayouts(n);
+  if(area!==n)return area>n?{ok:false,msg:`布局格子数 ${area}（${rows}×${cols}）多于 ${n} 台设备，建议改为：${hint||'—'}`}:{ok:false,msg:`布局格子数 ${area}（${rows}×${cols}）少于 ${n} 台设备，建议改为：${hint||'—'}`};
   return{ok:false,msg:'设备数量与布局不匹配，请调整行数/列数'};
 }
 /* autoLayout：根据设备数推导最接近正方形的行×列；质数则单行排开 */
@@ -573,20 +605,134 @@ function autoLayout(n){
 /* 进入拼接布局时：若当前行列乘积≠设备数，自动按已选设备数推导默认行列 */
 function ensureLayoutDefault(){
   const n=curDevices.length;
-  const rows=+document.getElementById('inRows').value;
-  const cols=+document.getElementById('inCols').value;
-  const curValid=rows*cols===n && n>0;
-  if(!curValid){
+  if(n===0)return;
+  const rowsEl=document.getElementById('inRows');
+  const colsEl=document.getElementById('inCols');
+  const rows=+rowsEl.value,cols=+colsEl.value;
+  if(rows*cols!==n){
     const d=autoLayout(n);
-    document.getElementById('inRows').value=d.rows;
-    document.getElementById('inCols').value=d.cols;
+    rowsEl.value=d.rows;
+    colsEl.value=d.cols;
   }
+}
+/* 计算所有可用的布局组合（如 6 → 1×6 / 2×3 / 3×2 / 6×1） */
+function suggestLayouts(n){
+  const layouts=[];
+  if(n<=0) return '';
+  for(let r=1;r<=Math.min(n,6);r++){
+    if(n%r===0 && n/r<=6) layouts.push(`${r}×${n/r}`);
+  }
+  return layouts.join(' / ');
+}
+/* 行/列输入时联动：让另一边自动适配，使 乘积 = 设备数（限制：行列均1~6） */
+function syncLayout(field){
+  const n=curDevices.length;
+  const rowsEl=document.getElementById('inRows');
+  const colsEl=document.getElementById('inCols');
+  let rows=Math.max(1,Math.min(6,+rowsEl.value||1));
+  let cols=Math.max(1,Math.min(6,+colsEl.value||1));
+  if(n>0){
+    if(field==='rows'){
+      // 行变了：若能整除，自动让列 = n/rows
+      if(n%rows===0){cols=n/rows;colsEl.value=cols;}
+    }else if(field==='cols'){
+      // 列变了：若能整除，自动让行 = n/cols
+      if(n%cols===0){rows=n/cols;rowsEl.value=rows;}
+    }else if(field==='auto'){
+      // 设备变化：保持当前行数优先，让列自动调整；否则按 autoLayout 推导
+      if(n%rows===0){cols=n/rows;colsEl.value=cols;}
+      else if(n%cols===0){rows=n/cols;rowsEl.value=rows;}
+      else{const d=autoLayout(n);rowsEl.value=d.rows;colsEl.value=d.cols;}
+    }
+  }
+  rowsEl.value=rows;
+  colsEl.value=cols;
+  updateLayoutHint();
+  renderWall();
+}
+/* 更新顶部提示与警告 */
+function updateLayoutHint(){
+  const n=curDevices.length;
+  const rows=+document.getElementById('inRows').value||1;
+  const cols=+document.getElementById('inCols').value||1;
+  const area=rows*cols;
+  document.getElementById('wallCount').textContent=n;
+  document.getElementById('layoutOptions').textContent=n>0?suggestLayouts(n):'—';
+  const warnEl=document.getElementById('layoutWarn');
+  if(n===0){
+    warnEl.classList.remove('show');
+    document.getElementById('inRows').classList.remove('invalid');
+    document.getElementById('inCols').classList.remove('invalid');
+    return;
+  }
+  const valid=area===n;
+  warnEl.classList.toggle('show',!valid);
+  warnEl.textContent=valid?'⚠️ 行×列 必须等于 已选设备数，否则无法保存':`⚠️ 当前 ${rows}×${cols}=${area} 与设备数 ${n} 不匹配，请调整为：${suggestLayouts(n)}`;
+  document.getElementById('inRows').classList.toggle('invalid',!valid);
+  document.getElementById('inCols').classList.toggle('invalid',!valid);
+}
+/* 拖动源索引（用于交换 curDevices 中两个位置） */
+let dragSrcIdx=null;
+function dragStart(e,i){
+  if(!curDevices[i]){e.preventDefault();return;}
+  // 布局不匹配时禁止拖动
+  if(isLayoutLocked()){e.preventDefault();showToast('布局与设备数不匹配，请先调整行数/列数');return;}
+  dragSrcIdx=i;
+  e.dataTransfer.effectAllowed='move';
+  e.dataTransfer.setData('text/plain',String(i));
+  e.currentTarget.classList.add('dragging');
+}
+function isLayoutLocked(){
+  const rows=+document.getElementById('inRows').value||1;
+  const cols=+document.getElementById('inCols').value||1;
+  const n=curDevices.length;
+  return n>0 && rows*cols!==n;
+}
+function dragOver(e){
+  if(isLayoutLocked()){e.dataTransfer.dropEffect='none';return;}
+  e.preventDefault();e.dataTransfer.dropEffect='move';
+}
+function dragEnter(e){if(isLayoutLocked())return;const c=e.target.closest('.wall-cell');if(c)c.classList.add('drag-over');}
+function dragLeave(e){const c=e.target.closest('.wall-cell');if(c&&e.relatedTarget&&!c.contains(e.relatedTarget))c.classList.remove('drag-over');}
+function dragEnd(e){e.currentTarget.classList.remove('dragging');document.querySelectorAll('.wall-cell.drag-over').forEach(n=>n.classList.remove('drag-over'));}
+function dragDrop(e,i){
+  e.preventDefault();
+  const c=e.target.closest('.wall-cell');if(c)c.classList.remove('drag-over');
+  if(dragSrcIdx===null||dragSrcIdx===i){dragSrcIdx=null;return;}
+  // 交换两个位置上的设备
+  const tmp=curDevices[dragSrcIdx];
+  curDevices[dragSrcIdx]=curDevices[i];
+  curDevices[i]=tmp;
+  dragSrcIdx=null;
+  renderWall();
 }
 function renderWall(){
   const rows=+document.getElementById('inRows').value||2,cols=+document.getElementById('inCols').value||3;
-  document.getElementById('wallCount').textContent=rows*cols;
-  const wall=document.getElementById('wallPreview');wall.style.gridTemplateColumns=`repeat(${cols},1fr)`;
-  let html='';for(let i=0;i<rows*cols;i++){html+=`<div class="wall-cell"></div>`;}wall.innerHTML=html;
+  const n=curDevices.length;
+  updateLayoutHint();
+  const wall=document.getElementById('wallPreview');
+  wall.style.gridTemplateColumns=`repeat(${cols},1fr)`;
+  const locked=n>0 && rows*cols!==n; // 布局不匹配时锁定拖动
+  wall.classList.toggle('invalid',locked);
+  let html='';
+  for(let i=0;i<rows*cols;i++){
+    const dev=curDevices[i];
+    if(dev){
+      const tip=`${dev.name}\nMAC：${dev.mac}\n尺寸：${dev.size}\n分辨率：${dev.res}`;
+      const dragAttrs=locked?'':'draggable="true" ondragstart="dragStart(event,'+i+')" ondragend="dragEnd(event)"';
+      const dropAttrs=locked?'':'ondragover="dragOver(event)" ondragenter="dragEnter(event)" ondragleave="dragLeave(event)" ondrop="dragDrop(event,'+i+')"';
+      html+=`<div class="wall-cell filled${locked?' locked':''}" ${dragAttrs} ${dropAttrs} data-i="${i}" title="${tip}">
+        <div class="wc-name">${dev.name}</div>
+        <div class="wc-mac">${dev.mac}</div>
+      </div>`;
+    }else{
+      const dropAttrs=locked?'':'ondragover="dragOver(event)" ondragenter="dragEnter(event)" ondragleave="dragLeave(event)" ondrop="dragDrop(event,'+i+')"';
+      html+=`<div class="wall-cell empty${locked?' locked':''}" ${dropAttrs} data-i="${i}">
+        <span>待分配</span>
+      </div>`;
+    }
+  }
+  wall.innerHTML=html;
 }
 function uploadVideo(){videoUploaded=true;showToast('已选择视频');const vi=document.getElementById('videoInfo');vi.style.display='block';document.getElementById('vi_name').textContent='演示视频_1080P.mp4';document.getElementById('vi_dur').textContent='01:30';document.getElementById('vi_res').textContent='1920×1080';document.getElementById('vi_size').textContent='128 MB';}
 function finishCreate(){
